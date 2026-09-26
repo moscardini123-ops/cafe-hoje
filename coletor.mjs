@@ -99,6 +99,50 @@ async function coletaDia(dia) {
   };
 }
 
+// ---------- WhatsApp (CallMeBot) ----------
+// WPP_DESTINOS = "5535999999999:APIKEY,5535988888888:APIKEY2"   ENVIAR_WPP=1 liga o envio
+const WPP = (process.env.WPP_DESTINOS || '').split(',').map(x => x.trim()).filter(Boolean).map(x => x.split(':'));
+const PAINEL = process.env.PAINEL_URL || 'https://cafe-da-mantiqueira.vercel.app/painel';
+const DS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'], DL = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+const brl = v => 'R$ ' + (v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const brl0 = v => 'R$ ' + Math.round(v || 0).toLocaleString('pt-BR');
+const nomeP = s => { s = String(s).toLowerCase().replace(/\s+/g, ' ').replace(/\s*\(.*?\)\s*/g, ' ').trim(); return s.charAt(0).toUpperCase() + s.slice(1); };
+
+async function totalDia(dia) {
+  const q = `query GetOrdersReport($filter: PedidoFilter, $page: Int, $limit: Int) { relatorio_pedidos(filter: $filter, page: $page, limit: $limit) { total pedidos { total } } }`;
+  const r = (await gql('GetOrdersReport', q, { filter: { data_criacao: { from: `${dia}T00:00:00-03:00`, to: `${dia}T23:59:59-03:00` } }, page: 1, limit: 1 })).relatorio_pedidos;
+  return { fat: r.total || 0, ped: r.pedidos.total || 0 };
+}
+
+function mensagem(out, ant) {
+  const d = new Date(out.dia + 'T12:00:00Z'), wd = d.getUTCDay(), r = out.resumo;
+  const titulo = `*☕ Café da Mantiqueira — ${DS[wd]} ${String(d.getUTCDate()).padStart(2, '0')}/${String(d.getUTCMonth() + 1).padStart(2, '0')}*`;
+  if (!out.pedidos.length) return `${titulo}\n\nNenhuma venda registrada hoje.\n\n📊 Painel: ${PAINEL}`;
+  const L = [titulo, '', `💰 *${brl(r.faturamento)}* em ${out.pedidos.length} pedidos`];
+  if (ant && ant.fat > 0) {
+    const p = (r.faturamento - ant.fat) / ant.fat * 100;
+    L.push(`${p >= 0 ? '📈' : '📉'} ${p >= 0 ? '+' : '−'}${Math.abs(p).toFixed(0)}% vs ${DL[wd]} passad${wd === 0 || wd === 6 ? 'o' : 'a'} (${brl(ant.fat)})`);
+  }
+  L.push(`🧾 Ticket médio: ${brl(r.faturamento / out.pedidos.length)}`, '', '🏆 *Mais vendidos*');
+  [...out.top].sort((a, b) => b.quantidade - a.quantidade).slice(0, 5)
+    .forEach((t, i) => L.push(`${i + 1}. ${nomeP(t.descricao)} — ${t.quantidade} un`));
+  const F = {}; out.formas.forEach(f => F[f.descricao] = (F[f.descricao] || 0) + f.valor);
+  L.push('', '💳 ' + Object.entries(F).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${brl0(v)}`).join(' · '));
+  const hs = Object.entries(out.porHora).sort((a, b) => b[1] - a[1]);
+  if (hs.length) L.push(`⏰ Hora mais cheia: ${hs[0][0]}h (${brl0(hs[0][1])})`);
+  L.push('', `📊 Painel: ${PAINEL}`);
+  return L.join('\n');
+}
+
+async function enviaWpp(texto) {
+  for (const [fone, key] of WPP) {
+    const u = `https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(fone)}&text=${encodeURIComponent(texto)}&apikey=${encodeURIComponent(key)}`;
+    const r = await fetch(u); const t = await r.text();
+    console.log(`WhatsApp ${fone.slice(0, 4)}…${fone.slice(-4)}: ${r.ok && !/error|invalid/i.test(t) ? 'enviado' : 'FALHOU ' + t.replace(/<[^>]+>/g, ' ').slice(0, 150)}`);
+    await new Promise(res => setTimeout(res, 3000));
+  }
+}
+
 const diasRefresh = await login();
 const soma = (d, n) => { const x = new Date(d + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); };
 const ini = process.argv[2] || hojeSP(), fimR = process.argv[3] || ini;
@@ -111,6 +155,12 @@ for (let dia = ini; dia <= fimR; dia = soma(dia, 1)) {
     const resp = await fetch(APPS, { method: 'POST', body: JSON.stringify({ action: 'cafeHoje', key: KEY, ...out }) });
     const t = await resp.text();
     if (!t.includes('"ok":true')) console.log('   planilha:', t.slice(0, 200));
+  }
+  if (process.env.ENVIAR_WPP === '1') {
+    const ant = await totalDia(soma(dia, -7)).catch(() => null);
+    const msg = mensagem(out, ant);
+    console.log('\n' + msg + '\n');
+    if (WPP.length) await enviaWpp(msg); else console.log('(sem WPP_DESTINOS: mensagem não enviada)');
   }
 }
 if (!APPS) console.log('(sem APPS_SCRIPT_URL: nada foi gravado na planilha)');
