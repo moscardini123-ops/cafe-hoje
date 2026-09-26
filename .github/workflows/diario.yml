@@ -1,0 +1,38 @@
+name: Café Hoje diário
+
+on:
+  schedule:
+    - cron: '15 21 * * *'   # 18:15 em Brasília: coleta o dia de hoje
+    - cron: '0 11 * * *'    # 08:00 em Brasília: recoleta ontem (pega pedidos fechados tarde)
+  workflow_dispatch:
+    inputs:
+      inicio:
+        description: 'Data inicial (AAAA-MM-DD). Vazio = hoje'
+        required: false
+      fim:
+        description: 'Data final (AAAA-MM-DD). Vazio = igual à inicial'
+        required: false
+
+jobs:
+  coletar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Coletar GrandChef e gravar na planilha
+        env:
+          GC_DEVICE: ${{ secrets.GC_DEVICE }}
+          GC_REFRESH: ${{ secrets.GC_REFRESH }}
+          APPS_SCRIPT_URL: ${{ secrets.APPS_SCRIPT_URL }}
+          CAFE_KEY: ${{ secrets.CAFE_KEY }}
+          TZ: America/Sao_Paulo
+        run: |
+          INI="${{ github.event.inputs.inicio }}"
+          FIM="${{ github.event.inputs.fim }}"
+          if [ -z "$INI" ]; then
+            if [ "${{ github.event.schedule }}" = "0 11 * * *" ]; then INI=$(date -d yesterday +%F); else INI=$(date +%F); fi
+          fi
+          node coletor.mjs "$INI" ${FIM:-$INI}
