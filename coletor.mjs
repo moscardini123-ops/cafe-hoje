@@ -33,16 +33,42 @@ async function login() {
 const APPS = process.env.APPS_SCRIPT_URL || '';
 const KEY = process.env.CAFE_KEY || '';
 
+const espera = ms => new Promise(r => setTimeout(r, ms));
+
 async function gql(operationName, query, variables) {
-  const r = await fetch(BASE, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json', 'x-app-version': '3.6.0', authorization: TOKEN },
-    body: JSON.stringify({ operationName, query, variables }),
-  });
-  const j = await r.json();
-  if (j.errors && !j.data) throw new Error(operationName + ': ' + JSON.stringify(j.errors));
-  if (j.errors) console.warn(`aviso ${operationName}: ${j.errors.length} campo(s) com erro, ignorados`);
-  return j.data;
+  for (let tent = 1; ; tent++) {
+    try {
+      const r = await fetch(BASE, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-app-version': '3.6.0', authorization: TOKEN },
+        body: JSON.stringify({ operationName, query, variables }),
+      });
+      const txt = await r.text();
+      const j = JSON.parse(txt);
+      if (j.errors && !j.data) throw new Error(operationName + ': ' + JSON.stringify(j.errors));
+      if (j.errors) console.warn(`aviso ${operationName}: ${j.errors.length} campo(s) com erro, ignorados`);
+      return j.data;
+    } catch (e) {
+      if (tent >= 5) throw e;
+      console.warn(`   GrandChef instável (${String(e.message).slice(0, 60)}), tentando de novo (${tent}/4)...`);
+      await espera(2000 * tent);
+    }
+  }
+}
+
+async function gravaPlanilha(payload) {
+  for (let tent = 1; tent <= 4; tent++) {
+    try {
+      let r = await fetch(APPS, { method: 'POST', body: JSON.stringify(payload), redirect: 'manual' });
+      if (r.status >= 300 && r.status < 400 && r.headers.get('location')) r = await fetch(r.headers.get('location'));
+      const t = await r.text();
+      if (t.includes('"ok":true')) return true;
+      console.warn(`   planilha respondeu estranho (tentativa ${tent}/4): ${t.slice(0, 80).replace(/\s+/g, ' ')}`);
+    } catch (e) { console.warn(`   planilha falhou (tentativa ${tent}/4): ${e.message}`); }
+    await espera(5000 * tent);
+  }
+  console.log('   ❌ NÃO gravou na planilha este dia — rode de novo depois.');
+  return false;
 }
 
 const Q_PEDIDOS = `query GetOrdersReport($filter: PedidoFilter, $order: PedidoOrder, $page: Int, $limit: Int) {
@@ -152,9 +178,7 @@ for (let dia = ini; dia <= fimR; dia = soma(dia, 1)) {
   const r = out.resumo;
   console.log(`${dia}  R$ ${(r.faturamento || 0).toFixed(2).padStart(9)}  ${String(out.pedidos.length).padStart(3)} pedidos  ${String(out.itens.length).padStart(4)} itens`);
   if (APPS && out.pedidos.length) {
-    const resp = await fetch(APPS, { method: 'POST', body: JSON.stringify({ action: 'cafeHoje', key: KEY, ...out }) });
-    const t = await resp.text();
-    if (!t.includes('"ok":true')) console.log('   planilha:', t.slice(0, 200));
+    await gravaPlanilha({ action: 'cafeHoje', key: KEY, ...out });
   }
   if (process.env.ENVIAR_WPP === '1') {
     const ant = await totalDia(soma(dia, -7)).catch(() => null);
