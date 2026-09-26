@@ -102,7 +102,7 @@ async function coletaDia(dia) {
 // ---------- WhatsApp (CallMeBot) ----------
 // WPP_DESTINOS = "5535999999999:APIKEY,5535988888888:APIKEY2"   ENVIAR_WPP=1 liga o envio
 const WPP = (process.env.WPP_DESTINOS || '').split(',').map(x => x.trim()).filter(Boolean).map(x => x.split(':'));
-const PAINEL = process.env.PAINEL_URL || 'https://cafe-da-mantiqueira.vercel.app/painel';
+const PAINEL = process.env.PAINEL_URL || `https://cafe-da-mantiqueira.vercel.app/painel?api=${encodeURIComponent(process.env.APPS_SCRIPT_URL || '')}&k=${encodeURIComponent(process.env.CAFE_KEY || '')}`;
 const DS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'], DL = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 const brl = v => 'R$ ' + (v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const brl0 = v => 'R$ ' + Math.round(v || 0).toLocaleString('pt-BR');
