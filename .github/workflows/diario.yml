@@ -18,10 +18,14 @@ on:
         type: boolean
         default: false
 
+concurrency:
+  group: cafe-hoje        # nunca roda duas coletas ao mesmo tempo (a segunda espera a primeira)
+  cancel-in-progress: false
+
 jobs:
   coletar:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
