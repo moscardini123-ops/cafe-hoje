@@ -12,6 +12,10 @@ on:
       fim:
         description: 'Data final (AAAA-MM-DD). Vazio = igual à inicial'
         required: false
+      whatsapp:
+        description: 'Mandar WhatsApp?'
+        type: boolean
+        default: false
 
 jobs:
   coletar:
@@ -28,6 +32,8 @@ jobs:
           GC_REFRESH: ${{ secrets.GC_REFRESH }}
           APPS_SCRIPT_URL: ${{ secrets.APPS_SCRIPT_URL }}
           CAFE_KEY: ${{ secrets.CAFE_KEY }}
+          WPP_DESTINOS: ${{ secrets.WPP_DESTINOS }}
+          ENVIAR_WPP: ${{ (github.event.schedule == '15 21 * * *' || github.event.inputs.whatsapp == 'true') && '1' || '0' }}
           TZ: America/Sao_Paulo
         run: |
           INI="${{ github.event.inputs.inicio }}"
