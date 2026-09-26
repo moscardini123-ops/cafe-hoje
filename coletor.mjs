@@ -4,7 +4,9 @@
 // GC_REFRESH = vuex.authorization.user.refresh_token (vale 30 dias)
 // Saída: resumo do dia em JSON (stdout) e, se APPS_SCRIPT_URL existir, envia para a planilha.
 const BASE = 'https://cafedamantiqueira.grandchef.com.br/graphql';
-const DEVICE = process.env.GC_DEVICE, REFRESH = process.env.GC_REFRESH;
+const limpa = v => String(v || '').trim().replace(/^["']|["']$/g, '').replace(/^(Bearer|Device)\s+/i, '');
+const DEVICE = limpa(process.env.GC_DEVICE), REFRESH = limpa(process.env.GC_REFRESH);
+const marca = v => `${v.length} caracteres, termina em ...${v.slice(-5)}`;
 let TOKEN = '';
 
 async function login() {
@@ -17,7 +19,11 @@ async function login() {
   });
   const j = await r.json();
   const t = j?.data?.RefreshToken?.access_token;
-  if (!t) throw new Error('Login falhou (refresh vencido?): ' + JSON.stringify(j.errors || j));
+  if (!t) {
+    console.log('GC_DEVICE :', marca(DEVICE), '(esperado: 407, ...OmdnM)');
+    console.log('GC_REFRESH:', marca(REFRESH), '(esperado: 303, ...iekKJA)');
+    throw new Error('Login falhou: ' + JSON.stringify(j.errors || j));
+  }
   TOKEN = `Bearer ${t}, Device ${DEVICE}`;
   const exp = JSON.parse(Buffer.from(REFRESH.split('.')[1], 'base64url')).exp * 1000;
   const dias = Math.floor((exp - Date.now()) / 864e5);
