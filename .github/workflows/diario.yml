@@ -14,10 +14,15 @@ on:
         description: 'Mandar WhatsApp?'
         type: boolean
         default: false
+      modo:
+        description: 'diario = coleta do GrandChef · semana = resumo da semana · mes = fechamento do mês'
+        type: choice
+        options: [diario, semana, mes]
+        default: diario
 
 concurrency:
   # importações de histórico (com data inicial) numa fila; rotina diária em outra — uma nunca atrasa a outra
-  group: ${{ github.event.inputs.inicio && 'cafe-importacao' || 'cafe-diario' }}
+  group: ${{ github.event.inputs.modo != '' && github.event.inputs.modo != 'diario' && 'cafe-resumo' || (github.event.inputs.inicio && 'cafe-importacao' || 'cafe-diario') }}
   cancel-in-progress: false
 
 jobs:
@@ -39,6 +44,11 @@ jobs:
           ENVIAR_WPP: ${{ (github.event.schedule == '15 21 * * *' || github.event.inputs.whatsapp == 'true') && '1' || '0' }}
           TZ: America/Sao_Paulo
         run: |
+          MODO="${{ github.event.inputs.modo || 'diario' }}"
+          if [ "$MODO" != "diario" ]; then
+            MODO="$MODO" ENVIAR_WPP="${{ github.event.inputs.whatsapp == 'false' && '0' || '1' }}" node resumo.mjs ${{ github.event.inputs.inicio }}
+            exit 0
+          fi
           INI="${{ github.event.inputs.inicio }}"
           FIM="${{ github.event.inputs.fim }}"
           if [ -z "$INI" ]; then
