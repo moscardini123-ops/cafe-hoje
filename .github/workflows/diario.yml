@@ -19,6 +19,10 @@ on:
         type: choice
         options: [diario, semana, mes]
         default: diario
+      leve:
+        description: 'Importação leve de histórico (só antes de 2026-04-01)'
+        type: boolean
+        default: false
 
 concurrency:
   # importações de histórico (com data inicial) numa fila; rotina diária em outra — uma nunca atrasa a outra
@@ -28,7 +32,7 @@ concurrency:
 jobs:
   coletar:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: ${{ github.event.inputs.leve == 'true' && 180 || 45 }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -41,6 +45,7 @@ jobs:
           APPS_SCRIPT_URL: ${{ secrets.APPS_SCRIPT_URL }}
           CAFE_KEY: ${{ secrets.CAFE_KEY }}
           WPP_DESTINOS: ${{ secrets.WPP_DESTINOS }}
+          LEVE: ${{ github.event.inputs.leve == 'true' && '1' || '0' }}
           ENVIAR_WPP: ${{ (github.event.schedule == '15 21 * * *' || github.event.inputs.whatsapp == 'true') && '1' || '0' }}
           TZ: America/Sao_Paulo
         run: |
