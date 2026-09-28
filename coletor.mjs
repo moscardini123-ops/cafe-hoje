@@ -125,6 +125,35 @@ async function coletaDia(dia) {
   };
 }
 
+
+// Importação leve (histórico): só totais do dia, horário, produtos e formas de pagamento — sem abrir cada pedido.
+// Só para datas antes de 2026-04-01, onde não há dados completos para sobrescrever.
+async function coletaLeve(dia) {
+  const ini = `${dia}T00:00:00-03:00`, fim = `${dia}T23:59:59-03:00`;
+  const lista = []; let page = 1, rel;
+  do {
+    rel = (await gql('GetOrdersReport', Q_PEDIDOS, {
+      filter: { data_criacao: { from: ini, to: fim } }, order: { id: 'asc' }, page, limit: 100,
+    })).relatorio_pedidos;
+    lista.push(...rel.pedidos.data);
+  } while (page++ < rel.pedidos.last_page);
+  const porHora = {};
+  for (const p of lista) {
+    if (p.estado === 'cancelado') continue;
+    const h = new Date(new Date(p.data_criacao).getTime() - 3 * 3600e3).getUTCHours();
+    porHora[h] = (porHora[h] || 0) + p.total;
+  }
+  const produtos = lista.length ? (await gql('GetDashboardProductSales', Q_PRODUTOS, { inicio: ini, fim })).venda_produto : [];
+  const formas = lista.length ? (await gql('GetDashboardPaymentMethod', Q_PAGTOS, { inicio: ini, fim })).pagamento_venda : [];
+  return {
+    dia,
+    resumo: { faturamento: rel.total || 0, pedidos: lista.length, ticket_medio: rel.ticket_medio,
+              cancelados: rel.cancelados, descontos: rel.descontos },
+    top: [...produtos].sort((a, b) => b.valor - a.valor),
+    formas, porHora, pedidos: [], itens: [], pagamentos: [],
+  };
+}
+
 // ---------- WhatsApp (CallMeBot) ----------
 // WPP_DESTINOS = "5535999999999:APIKEY,5535988888888:APIKEY2"   ENVIAR_WPP=1 liga o envio
 const WPP = (process.env.WPP_DESTINOS || '').split(',').map(x => x.trim()).filter(Boolean).map(x => x.split(':'));
@@ -173,11 +202,13 @@ const diasRefresh = await login();
 const soma = (d, n) => { const x = new Date(d + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); };
 const ini = process.argv[2] || hojeSP(), fimR = process.argv[3] || ini;
 for (let dia = ini; dia <= fimR; dia = soma(dia, 1)) {
-  const out = await coletaDia(dia);
+  const LEVE = process.env.LEVE === '1';
+  if (LEVE && dia >= '2026-04-01') { console.log(`${dia}  pulado (importação leve só vale antes de 2026-04-01)`); continue; }
+  const out = LEVE ? await coletaLeve(dia) : await coletaDia(dia);
   out.diasRefresh = diasRefresh;
   const r = out.resumo;
-  console.log(`${dia}  R$ ${(r.faturamento || 0).toFixed(2).padStart(9)}  ${String(out.pedidos.length).padStart(3)} pedidos  ${String(out.itens.length).padStart(4)} itens`);
-  if (APPS && out.pedidos.length) {
+  console.log(`${dia}  R$ ${(r.faturamento || 0).toFixed(2).padStart(9)}  ${String(r.pedidos).padStart(3)} pedidos  ${String(out.itens.length).padStart(4)} itens`);
+  if (APPS && r.pedidos) {
     await gravaPlanilha({ action: 'cafeHoje', key: KEY, ...out });
   }
   if (process.env.ENVIAR_WPP === '1') {
