@@ -43,7 +43,7 @@ async function dias() {
   if (!APPS || !KEY) throw new Error('Faltam APPS_SCRIPT_URL / CAFE_KEY');
   for (let t = 1; ; t++) {
     try {
-      const r = await fetch(`${APPS}?action=painel&k=${encodeURIComponent(KEY)}&n=120`);
+      const r = await fetch(`${APPS}?action=painel&k=${encodeURIComponent(KEY)}&n=500`);
       const j = JSON.parse(await r.text());
       if (j.erro) throw new Error(j.erro);
       return j.dias.map(d => ({ ...d, data: String(d.data).replace(/^'/, '') }));
@@ -75,6 +75,9 @@ function semana(D, dom) {
   if (!s.ped) return [...L, 'Nenhuma venda registrada na semana.'].join('\n');
   L.push(`💰 *${brl(s.fat)}* em ${s.ped} pedidos`, `🧾 Ticket médio: ${brl(s.ticket)}`);
   if (a.fat > 0) L.push(`${pct(s.fat, a.fat)} vs semana anterior (${brl(a.fat)} · ${a.ped} pedidos)`);
+  // mesma semana do ano passado: 364 dias antes (mesmos dias da semana)
+  const y0 = soma(ini, -364), y1 = soma(dom, -364), ly = junta(entre(D, y0, y1));
+  if (ly.fat > 0) L.push(`${pct(s.fat, ly.fat)} vs mesma semana de ${y1.slice(0, 4)} (${brl(ly.fat)})`);
   const fe = feriado(ini, dom), fa = feriado(ant0, ant1);
   if (fe.length) L.push(`_(esta semana teve feriado: ${fe.join(', ')})_`);
   if (fa.length) L.push(`_(semana anterior teve feriado: ${fa.join(', ')})_`);
@@ -96,6 +99,10 @@ function mes(D, ym) {
   const abertos = lista.filter(d => d.fat >= 300);
   L.push(`💰 *${brl(s.fat)}* em ${s.ped} pedidos`, `🧾 Ticket médio: ${brl(s.ticket)}`);
   if (pa > 0) L.push(`${pct(s.fat, pa)} vs ${MESES[(m + 10) % 12]} (${brl(pa)})`);
+  const la = entre(D, `${y - 1}-${String(m).padStart(2, '0')}-01`, `${y - 1}-${String(m).padStart(2, '0')}-31`).reduce((x, d) => x + d.fat, 0);
+  if (la > 0) L.push(`${pct(s.fat, la)} vs ${MESES[m - 1]} de ${y - 1} (${brl(la)})`);
+  const ano = entre(D, `${y}-01-01`, fim).reduce((x, d) => x + d.fat, 0), anoA = entre(D, `${y - 1}-01-01`, `${y - 1}${fim.slice(4)}`).reduce((x, d) => x + d.fat, 0);
+  if (anoA > 0) L.push(`📈 No ano: ${brl(ano)} · ${pct(ano, anoA).replace(/^📈 |^📉 /, '')} vs mesmo período de ${y - 1}`);
   L.push(`📆 ${abertos.length} dias abertos · média ${brl(s.fat / (abertos.length || 1))}/dia`);
   let acc = 0, diaEq = null;
   for (const d of lista) { acc += d.fat; if (!diaEq && acc >= EQUILIBRIO) diaEq = d.data; }
@@ -131,5 +138,5 @@ if (MODO === 'mes') {
 } else {
   msg = semana(D, process.argv[2] || hojeSP());
 }
-console.log('\n' + msg + '\n');
+console.log('Resumo montado (' + msg.length + ' caracteres)');
 if (ENVIAR && WPP.length) await enviaWpp(msg); else console.log('(WhatsApp não enviado: teste ou sem WPP_DESTINOS)');
