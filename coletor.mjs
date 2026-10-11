@@ -20,8 +20,6 @@ async function login() {
   const j = await r.json();
   const t = j?.data?.RefreshToken?.access_token;
   if (!t) {
-    console.log('GC_DEVICE :', marca(DEVICE), '(esperado: 407, ...OmdnM)');
-    console.log('GC_REFRESH:', marca(REFRESH), '(esperado: 303, ...iekKJA)');
     throw new Error('Login falhou: ' + JSON.stringify(j.errors || j));
   }
   TOKEN = `Bearer ${t}, Device ${DEVICE}`;
@@ -207,14 +205,13 @@ for (let dia = ini; dia <= fimR; dia = soma(dia, 1)) {
   const out = LEVE ? await coletaLeve(dia) : await coletaDia(dia);
   out.diasRefresh = diasRefresh;
   const r = out.resumo;
-  console.log(`${dia}  R$ ${(r.faturamento || 0).toFixed(2).padStart(9)}  ${String(r.pedidos).padStart(3)} pedidos  ${String(out.itens.length).padStart(4)} itens`);
+  console.log(`${dia}  coletado (${r.pedidos ? 'com vendas' : 'sem vendas'})`);
   if (APPS && r.pedidos) {
     await gravaPlanilha({ action: 'cafeHoje', key: KEY, ...out });
   }
   if (process.env.ENVIAR_WPP === '1') {
     const ant = await totalDia(soma(dia, -7)).catch(() => null);
     const msg = mensagem(out, ant);
-    console.log('\n' + msg + '\n');
     if (WPP.length) await enviaWpp(msg); else console.log('(sem WPP_DESTINOS: mensagem não enviada)');
   }
 }
