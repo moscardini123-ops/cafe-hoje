@@ -2,6 +2,7 @@
 // Lê a planilha (não usa o GrandChef). Uso:
 //   MODO=semana node resumo.mjs [AAAA-MM-DD do domingo]   (padrão: hoje)
 //   MODO=mes    node resumo.mjs [AAAA-MM]                  (padrão: mês passado)
+import { recado } from './recados.mjs';
 const APPS = process.env.APPS_SCRIPT_URL || '', KEY = process.env.CAFE_KEY || '';
 const MODO = process.env.MODO || 'semana';
 const ENVIAR = process.env.ENVIAR_WPP !== '0';
@@ -85,6 +86,8 @@ function semana(D, dom) {
   s.top.forEach(([p, q], i) => L.push(`${i + 1}. ${nome(p)} — ${q}`));
   L.push('', '⏰ *Horários de pico*', s.pico.map(([h, v]) => `${h}h - ${brl(v)}`).join(' · '));
   L.push('', `📅 Faturado em ${MESES[Number(dom.slice(5, 7)) - 1]} até agora: *${brl(mesTot)}*`);
+  const boa = !(a.fat > 0) || s.fat >= a.fat * 0.95 || (ly.fat > 0 && s.fat >= ly.fat);
+  L.push('', recado(boa ? 'semana_boa' : 'semana_fraca', dom));
   return L.join('\n');
 }
 
@@ -117,6 +120,8 @@ function mes(D, ym) {
   L.push('', '🏆 *Top 5 do mês*');
   s.top.forEach(([p, q], i) => L.push(`${i + 1}. ${nome(p)} — ${q}`));
   L.push('', `⏰ Pico: ${s.pico.map(([h]) => h + 'h').join(' · ')}`);
+  const bom = !!diaEq && (!(la > 0) || s.fat >= la * 0.95 || !(pa > 0) || s.fat >= pa * 0.95);
+  L.push('', recado(bom ? 'mes_bom' : 'mes_fraco', fim));
   return L.join('\n');
 }
 

@@ -3,6 +3,7 @@
 // GC_DEVICE  = vuex.connection.device.access_token   (vale 1 ano)
 // GC_REFRESH = vuex.authorization.user.refresh_token (vale 30 dias)
 // Saída: resumo do dia em JSON (stdout) e, se APPS_SCRIPT_URL existir, envia para a planilha.
+import { recado, tipoDia } from './recados.mjs';
 const BASE = 'https://cafedamantiqueira.grandchef.com.br/graphql';
 const limpa = v => String(v || '').trim().replace(/^["']|["']$/g, '').replace(/^(Bearer|Device)\s+/i, '');
 const DEVICE = limpa(process.env.GC_DEVICE), REFRESH = limpa(process.env.GC_REFRESH);
@@ -155,7 +156,7 @@ async function coletaLeve(dia) {
 // ---------- WhatsApp (CallMeBot) ----------
 // WPP_DESTINOS = "5535999999999:APIKEY,5535988888888:APIKEY2"   ENVIAR_WPP=1 liga o envio
 const WPP = (process.env.WPP_DESTINOS || '').split(',').map(x => x.trim()).filter(Boolean).map(x => x.split(':'));
-const PAINEL = process.env.PAINEL_URL || `https://cafe-da-mantiqueira.vercel.app/painel?api=${encodeURIComponent(process.env.APPS_SCRIPT_URL || '')}&k=${encodeURIComponent(process.env.CAFE_KEY || '')}`;
+const PAINEL = process.env.PAINEL_URL || "https://cafe-da-mantiqueira.vercel.app/painel";
 const DS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'], DL = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 const brl = v => 'R$ ' + (v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const brl0 = v => 'R$ ' + Math.round(v || 0).toLocaleString('pt-BR');
@@ -172,8 +173,9 @@ function mensagem(out, ant) {
   const titulo = `*☕ Café da Mantiqueira — ${DS[wd]} ${String(d.getUTCDate()).padStart(2, '0')}/${String(d.getUTCMonth() + 1).padStart(2, '0')}*`;
   if (!out.pedidos.length) return `${titulo}\n\nNenhuma venda registrada hoje.\n\n📊 Painel: ${PAINEL}`;
   const L = [titulo, '', `💰 *${brl(r.faturamento)}* em ${out.pedidos.length} pedidos`];
+  let p = null;
   if (ant && ant.fat > 0) {
-    const p = (r.faturamento - ant.fat) / ant.fat * 100;
+    p = (r.faturamento - ant.fat) / ant.fat * 100;
     L.push(`${p >= 0 ? '📈' : '📉'} ${p >= 0 ? '+' : '−'}${Math.abs(p).toFixed(0)}% vs ${DL[wd]} passad${wd === 0 || wd === 6 ? 'o' : 'a'} (${brl(ant.fat)})`);
   }
   L.push(`🧾 Ticket médio: ${brl(r.faturamento / out.pedidos.length)}`, '', '🏆 *Mais vendidos*');
@@ -183,7 +185,7 @@ function mensagem(out, ant) {
   L.push('', '💳 ' + Object.entries(F).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${brl0(v)}`).join(' · '));
   const hs = Object.entries(out.porHora).sort((a, b) => b[1] - a[1]);
   if (hs.length) L.push(`⏰ Hora mais cheia: ${hs[0][0]}h (${brl0(hs[0][1])})`);
-  L.push('', `📊 Painel: ${PAINEL}`);
+  L.push('', recado(tipoDia(p), out.dia), '', `📊 Painel: ${PAINEL}`);
   return L.join('\n');
 }
 
