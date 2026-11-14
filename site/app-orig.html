@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Preços do Café</title>
+<meta name="theme-color" content="#4A2C17">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F6F3EC;--card:#fff;--ink:#2A1A0F;--ink2:#5E4E40;--line:#E4DCCD;--brown:#4A2C17;--olive:#4F6126;
+--ok:#2E6B3A;--ok-bg:#E2F0E4;--warn:#7A4F00;--warn-bg:#FBEFD5;--bad:#A52A1F;--bad-bg:#FBE4E1;--r:16px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:400 19px/1.45 "Nunito Sans",system-ui,sans-serif;padding-bottom:calc(92px + env(safe-area-inset-bottom))}
+button,input,select,textarea{font:inherit;color:inherit}
+header{background:var(--brown);color:#fff;padding:calc(12px + env(safe-area-inset-top)) 18px 12px;position:sticky;top:0;z-index:5;display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+header h1{margin:0;font-size:21px;font-weight:800}
+header small{font-size:14px;opacity:.85;text-align:right}
+main{max-width:640px;margin:0 auto;padding:16px}
+h2{font-size:26px;line-height:1.2;margin:4px 0 10px;font-weight:800}
+h3{font-size:17px;margin:26px 0 8px;color:var(--ink2);text-transform:uppercase;letter-spacing:.05em}
+p{margin:6px 0}
+.muted{color:var(--ink2)}
+.small{font-size:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin:12px 0}
+.steps{margin:8px 0 0;padding-left:22px}.steps li{margin:6px 0}
+.big-btn{display:block;width:100%;text-align:left;background:var(--card);border:2px solid var(--line);border-radius:var(--r);padding:18px;margin:12px 0;cursor:pointer}
+.big-btn b{font-size:22px;display:block}
+.bar{height:12px;background:#EDE6D8;border-radius:99px;overflow:hidden;margin:10px 0 6px}.bar i{display:block;height:100%;background:var(--olive);border-radius:99px}
+.go{display:inline-block;margin-top:8px;font-weight:800;color:var(--olive)}
+.search{width:100%;padding:14px 16px;border:2px solid var(--line);border-radius:var(--r);background:#fff;font-size:19px}
+.chips{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}
+.chip{padding:10px 14px;border-radius:99px;border:2px solid var(--line);background:#fff;font-weight:700;font-size:16px;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--brown);border-color:var(--brown);color:#fff}
+.list{display:flex;flex-direction:column;gap:10px}
+.row{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;width:100%;text-align:left;cursor:pointer;min-height:64px}
+.row .grow{flex:1;min-width:0}
+.row b{display:block;font-size:19px;line-height:1.25}
+.row .sub{color:var(--ink2);font-size:16px}
+.tag{font-size:14px;font-weight:800;padding:6px 10px;border-radius:99px;white-space:nowrap}
+.ok{background:var(--ok-bg);color:var(--ok)}.warn{background:var(--warn-bg);color:var(--warn)}.bad{background:var(--bad-bg);color:var(--bad)}.none{background:#EEE9E0;color:#5E4E40}
+.aviso{background:var(--warn-bg);color:var(--warn);border-radius:12px;padding:12px 14px;margin:10px 0;font-size:17px}
+.aviso b{display:block}
+.aviso ul{margin:4px 0 0;padding-left:20px}
+.hoje{font-size:21px;font-weight:700}
+.hoje>span{display:block;font-size:16px;font-weight:400;color:var(--ink2)}
+label.f{display:block;font-weight:800;margin:18px 0 6px;font-size:18px}
+.help{font-size:15px;color:var(--ink2);margin:-2px 0 8px}
+input.in,select.in,textarea.in{width:100%;padding:14px;border:2px solid var(--line);border-radius:12px;background:#fff;font-size:20px;min-height:56px}
+textarea.in{min-height:80px;font-size:18px}
+input.in:focus,select.in:focus,textarea.in:focus,.search:focus,.qty input:focus{outline:3px solid #C9B28F;border-color:var(--brown)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.item{display:grid;grid-template-columns:1fr auto 48px;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.item .nm{font-weight:700;line-height:1.25}.item .nm small{display:block;color:var(--ink2);font-weight:400;font-size:15px}
+.item.flag .nm{color:var(--warn)}
+.qty{display:flex;align-items:center;border:2px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}
+.qty input{border:0;width:84px;padding:12px 8px;font-size:19px;text-align:right;background:transparent;outline:0}
+.qty span{padding:0 10px 0 2px;color:var(--ink2);font-size:16px;white-space:nowrap}
+.x{width:48px;height:48px;border:0;border-radius:12px;background:#F1ECE3;font-size:24px;cursor:pointer;color:var(--ink2)}
+.btn{display:block;width:100%;padding:17px;border:0;border-radius:var(--r);font-weight:800;font-size:20px;cursor:pointer;margin-top:12px;min-height:60px}
+.btn.primary{background:var(--olive);color:#fff}
+.btn.ghost{background:#fff;border:2px solid var(--line)}
+.btn.link{background:none;color:var(--ink2);font-weight:700;font-size:18px;min-height:48px;padding:10px;text-decoration:underline}
+.btn.danger{background:#fff;border:2px solid var(--bad-bg);color:var(--bad)}
+.actions{margin-top:22px}.actions .btn{margin-top:0}
+body.typing nav{display:none}body.typing{padding-bottom:20px}
+.back{background:none;border:0;font-weight:800;color:var(--olive);font-size:18px;padding:10px 0;cursor:pointer;min-height:48px}
+.pos{font-size:15px;font-weight:800;color:var(--ink2);text-transform:uppercase;letter-spacing:.04em}
+details{margin-top:18px}summary{cursor:pointer;font-weight:700;color:var(--ink2);padding:10px 0;min-height:48px}
+nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr);padding-bottom:env(safe-area-inset-bottom);z-index:6}
+nav button{border:0;background:none;padding:10px 4px 12px;font-weight:800;font-size:16px;color:var(--ink2);cursor:pointer;min-height:66px}
+nav button .ic{display:block;font-size:24px;line-height:1.1}
+nav button[aria-current=true]{color:var(--brown);box-shadow:inset 0 4px 0 var(--brown)}
+.toast{position:fixed;left:50%;top:calc(70px + env(safe-area-inset-top));transform:translateX(-50%);background:var(--ink);color:#fff;padding:14px 22px;border-radius:99px;font-weight:800;font-size:18px;opacity:0;transition:.2s;pointer-events:none;z-index:9;max-width:92vw;text-align:center}
+.toast.on{opacity:1}
+.done{text-align:center;padding:30px 10px}
+.done .ico{font-size:56px;color:var(--ok)}
+.tcap{position:sticky;top:54px;z-index:4;background:var(--brown);color:#fff;border-radius:14px;padding:14px 16px;font-size:20px;line-height:1.35;min-height:96px;margin:10px 0 12px;box-shadow:0 4px 12px rgba(0,0,0,.18)}
+.tcap small{display:block;font-size:14px;opacity:.8;font-weight:700;letter-spacing:.05em;margin-bottom:4px}
+.stage{position:relative;border:3px dashed #C9B28F;border-radius:18px;padding:14px;background:var(--bg);pointer-events:none;overflow:hidden}
+.stage .item{padding:8px 0}.stage h3{margin:14px 0 4px}.stage label.f{margin:10px 0 6px}
+.dtag{position:absolute;right:10px;top:10px;background:#C9B28F;color:#fff;font-weight:800;font-size:13px;padding:3px 10px;border-radius:99px;letter-spacing:.08em}
+.dfake{display:flex;align-items:center}.dq{display:inline-block;min-width:60px;text-align:right;padding:12px 8px;font-size:19px}
+.dsum{font-weight:700;color:var(--ink2);padding:10px 0}
+.finger{position:absolute;left:60%;top:-70px;font-size:46px;line-height:1;transition:left .9s ease,top .9s ease;z-index:10;filter:drop-shadow(0 3px 4px rgba(0,0,0,.35))}
+.ripple{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;background:rgba(233,160,77,.75);z-index:9;animation:rip .7s ease-out forwards}
+@keyframes rip{from{transform:scale(.3);opacity:1}to{transform:scale(3.2);opacity:0}}
+.hl2{outline:4px solid #E9A04D!important;outline-offset:3px;border-radius:12px}
+.dtoast{position:absolute;left:50%;bottom:90px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:99px;font-weight:800;opacity:0;transition:.3s;white-space:nowrap}.dtoast.on{opacity:1}
+.fade{transition:opacity .5s,max-height .5s;overflow:hidden;max-height:200px}.fade.out{opacity:0;max-height:0;margin:0;padding:0}
+.btn[disabled]{opacity:.55;cursor:default}
+.tutnote{background:#FFF6E5;border:2px solid #E9A04D;border-radius:12px;padding:10px 12px;margin-top:10px;font-size:16px;font-weight:700;color:#7A4F00}
+</style>
+</head>
+<body>
+<header><h1>Preços do Café</h1><small id="st">Carregando…</small></header>
+<main id="main"><p class="muted">Carregando…</p></main>
+<nav>
+  <button data-go="inicio"><span class="ic">🏠</span>Início</button>
+  <button data-go="ingredientes"><span class="ic">🧺</span>Ingredientes</button>
+  <button data-go="receitas"><span class="ic">📋</span>Receitas</button>
+</nav>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+/* ===== CONFIGURE AQUI: link do Apps Script (termina em /exec) ===== */
+const API_FIXA = "";
+/* ================================================================== */
+const LS={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+let API = API_FIXA || LS.get('api') || '';
+const qs=new URLSearchParams(location.search); if(qs.get('api')){API=qs.get('api');LS.set('api',API);history.replaceState(null,'',location.pathname)}
+let DB={ings:[],recs:[],cfg:{meta:30,taxa:8,imposto:5}};
+let view={tela:'inicio',filtroI:'falta',filtroR:'falta',busca:''};
+const $=s=>document.querySelector(s);
+const brl=v=>v==null||isNaN(v)?'—':'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const num=v=>{if(v===''||v==null)return null;let s=String(v).trim().replace(/[R$\s]/g,'');if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');else if(!/^\d+\.\d{1,3}$/.test(s))s=s.replace(/\./g,'');const n=parseFloat(s);return isNaN(n)?null:n};
+const fmtN=v=>v==null?'':Number(v).toLocaleString('pt-BR',{maximumFractionDigits:3});
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const enc=s=>encodeURIComponent(s).replace(/'/g,'%27');
+const fmtM=v=>v==null?'':Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const hoje=()=>new Date().toLocaleDateString('pt-BR');
+const UNI={g:'g',ml:'ml',un:'unid.'};
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('on'),2400)}
+function status(t){$('#st').textContent=t}
+
+/* ---------- dados ---------- */
+async function carregar(){
+  try{
+    if(API){const r=await fetch(API+'?action=all&t='+Date.now());const j=await r.json();if(j.erro||!j.recs)throw new Error(j.erro||'resposta inválida');DB=j;LS.set('cache',JSON.stringify(j));status('Salvando na planilha ✓')}
+    else{const c=LS.get('local');if(c)DB=JSON.parse(c);else{const r=await fetch('/seed.json');const s=await r.json();DB={ings:s.ings,recs:s.recs,cfg:{meta:30,taxa:8,imposto:5}};LS.set('local',JSON.stringify(DB))}status('Salvando neste celular')}
+  }catch(e){const c=LS.get('cache');if(c){DB=JSON.parse(c);status('Sem internet: mostrando a última versão')}else{try{const l=LS.get('local');if(l)DB=JSON.parse(l);else{const r=await fetch('/seed.json');const s=await r.json();DB={ings:s.ings,recs:s.recs,cfg:{}}}}catch(e2){}status(API?'Planilha não respondeu':'Sem internet')}}
+  DB.cfg=Object.assign({meta:30,taxa:8,imposto:5},DB.cfg||{});
+  render();
+}
+async function salvar(acao,dados){
+  if(!API){aplicaLocal(acao,dados);LS.set('local',JSON.stringify(DB));return true}
+  try{status('Salvando…');const r=await fetch(API,{method:'POST',body:JSON.stringify(Object.assign({action:acao},dados))});const j=await r.json();if(j.erro)throw new Error(j.erro);aplicaLocal(acao,dados);LS.set('cache',JSON.stringify(DB));status('Salvando na planilha ✓');return true}
+  catch(e){status('Não salvou');alert('Não consegui salvar. Confira se o celular está com internet e toque no botão de novo.');return false}
+}
+function aplicaLocal(acao,d){
+  if(acao==='saveIng'){const i=DB.ings.findIndex(x=>x.nome===(d.old||d.obj.nome));if(i>=0)DB.ings[i]=d.obj;else DB.ings.push(d.obj);if(d.old&&d.old!==d.obj.nome)DB.recs.forEach(r=>r.itens.forEach(it=>{if(it.t==='i'&&it.n===d.old)it.n=d.obj.nome}))}
+  if(acao==='saveRec'){const i=DB.recs.findIndex(x=>x.nome===(d.old||d.obj.nome));if(i>=0)DB.recs[i]=d.obj;else DB.recs.push(d.obj);if(d.old&&d.old!==d.obj.nome)DB.recs.forEach(r=>r.itens.forEach(it=>{if(it.t==='r'&&it.n===d.old)it.n=d.obj.nome}))}
+  if(acao==='del'){const k=d.kind==='ing'?'ings':'recs';DB[k]=DB[k].filter(x=>x.nome!==d.nome)}
+  if(acao==='saveCfg')DB.cfg=d.cfg;
+}
+
+/* ---------- cálculos ---------- */
+const ING=n=>DB.ings.find(x=>x.nome===n), REC=n=>DB.recs.find(x=>x.nome===n);
+const confI=i=>!!(i.atual&&i.atual!=='planilha antiga');
+const confR=r=>!!r.conf;
+const ordI=()=>DB.ings.slice().sort((a,b)=>a.nome.localeCompare(b.nome,'pt'));
+const ordR=()=>DB.recs.slice().sort((a,b)=>(a.tipo==='base'?0:1)-(b.tipo==='base'?0:1)||a.nome.localeCompare(b.nome,'pt'));
+function custoItem(it,pilha=[]){
+  if(it.t==='i'){const i=ING(it.n);if(!i||!i.emb)return null;return (it.q||0)*i.preco/i.emb}
+  const r=REC(it.n);if(!r||pilha.includes(r.nome))return null;const c=custoReceita(r,pilha.concat(r.nome));return c==null||!r.rende?null:(it.q||0)*c/r.rende
+}
+function custoReceita(r,pilha=[r.nome]){let t=0;for(const it of r.itens){const c=custoItem(it,pilha);if(c==null)return null;t+=c}return t}
+function analise(r){
+  const tot=custoReceita(r);const un=tot==null||!r.rende?null:tot/r.rende;const c=DB.cfg;
+  const p=r.preco||null;const pct=un!=null&&p?un/p*100:null;
+  const sobra=un!=null&&p?p*(1-(c.taxa+c.imposto)/100)-un:null;
+  const sug=un!=null?Math.ceil(un/(c.meta/100)*2)/2:null;
+  let tag='none',txt='Sem preço';
+  if(pct!=null){if(pct<=c.meta){tag='ok';txt='Preço bom'}else if(pct<=c.meta+10){tag='warn';txt='Atenção'}else{tag='bad';txt='Rever preço'}}
+  if(un==null){tag='bad';txt='Falta dado'}
+  return{tot,un,pct,sobra,sug,tag,txt}
+}
+const unSing=u=>({fatias:'fatia',unidades:'unidade','porções':'porção','xícaras':'xícara',copos:'copo',gramas:'grama'}[u]||u);
+const unItem=it=>it.t==='i'?(UNI[(ING(it.n)||{}).un]||''):((REC(it.n)||{}).un||'');
+const NOTAS={
+ 'Pão caseiro':'Na planilha antiga esta receita não tem farinha. Confira os ingredientes e quanto rende.',
+ 'Massa de flankurein':'Está igual à receita do pão caseiro. Confira os ingredientes de verdade da massa.',
+ 'Geleia de morango':'Confira quanto rende (hoje: 15 porções) e o preço das frutas.',
+ 'Pão com queijo e mel vegano':'Falta o pão nesta receita?',
+ 'Pão com geleia':'Quanto de geleia vai em cada pão?'
+};
+const MIUDO=['Água','Sal','Canela','Fermento em pó','Bicarbonato'];
+function estranho(it){const i=it.t==='i'&&ING(it.n);if(!i||!(it.q>0))return '';
+  if(i.un!=='un'&&!MIUDO.includes(i.nome)&&it.q<5)return `Quantidade muito pequena: ${fmtN(it.q)} ${UNI[i.un]} de ${it.n}.`;
+  if(i.un==='un'&&it.q>=20&&i.emb<it.q)return `Quantidade muito grande: ${fmtN(it.q)} unidades de ${it.n}. Não seriam gramas?`;
+  if(!i.preco)return `O preço de "${it.n}" está zerado na lista de ingredientes.`;
+  return ''}
+function avisosRec(r){
+  const a=[];if(NOTAS[r.nome])a.push(NOTAS[r.nome]);
+  if(!r.itens.length)a.push('Ainda não tem ingredientes.');
+  if(!r.rende)a.push('Falta dizer quanto rende.');
+  if(r.tipo!=='base'&&!r.preco)a.push('Falta o preço de venda.');
+  r.itens.forEach(it=>{
+    if(it.t==='i'&&!ING(it.n))a.push(`"${it.n}" não está na lista de ingredientes.`);
+    if(it.t==='r'&&!REC(it.n))a.push(`"${it.n}" não está na lista de receitas.`);
+    const x=estranho(it);if(x)a.push(x);
+  });
+  return a;
+}
+const suspeito=(r,it)=>(it.t==='i'&&!ING(it.n))||(it.t==='r'&&!REC(it.n))||!!estranho(it);
+
+/* ---------- navegação ---------- */
+let edit=null,orig='';
+const limpo=o=>JSON.stringify(o,(k,v)=>k.startsWith('_')?undefined:v);
+const sujo=()=>edit&&limpo(edit)!==orig;
+function ir(t){tutId++;if(sujo()&&!confirm('Você mudou coisas e ainda não salvou.\n\nSair mesmo assim?'))return;edit=null;view.tela=t;view.busca='';render();window.scrollTo(0,0)}
+document.querySelector('nav').onclick=e=>{const b=e.target.closest('button');if(b)ir(b.dataset.go)};
+function render(){
+  const [t,arg,modo]=view.tela.split(':');
+  const aba={inicio:'inicio',ingredientes:'ingredientes',ing:'ingredientes',receitas:'receitas',rec:'receitas',ajustes:'inicio',tut:'receitas',fim:t==='fim'&&arg==='i'?'ingredientes':'receitas'}[t];
+  document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.go===aba));
+  const m=$('#main');
+  if(t==='inicio')m.innerHTML=telaInicio();
+  if(t==='ingredientes')m.innerHTML=telaIngs();
+  if(t==='ing')m.innerHTML=telaIng(decodeURIComponent(arg),modo==='g');
+  if(t==='receitas')m.innerHTML=telaRecs();
+  if(t==='rec')m.innerHTML=telaRec(decodeURIComponent(arg),modo==='g');
+  if(t==='ajustes')m.innerHTML=telaAjustes();
+  if(t==='fim')m.innerHTML=telaFim(arg);
+  if(t==='tut'){m.innerHTML=telaTut();rodaTut()}
+}
+function proximo(tipo,atual){
+  const L=tipo==='i'?ordI():ordR(),ok=tipo==='i'?confI:confR;
+  const k=L.findIndex(x=>x.nome===atual);
+  const ordem=L.slice(k+1).concat(L.slice(0,k+1));
+  const n=ordem.find(x=>x.nome!==atual&&!ok(x));
+  edit=null;view.tela=n?(tipo==='i'?'ing:':'rec:')+enc(n.nome)+':g':'fim:'+tipo;render();window.scrollTo(0,0);
+}
+function comecar(tipo){if(tipo==='r'&&!LS.get('tutR')){ir('tut');return}const L=tipo==='i'?ordI():ordR(),ok=tipo==='i'?confI:confR;const n=L.find(x=>!ok(x));ir(n?(tipo==='i'?'ing:':'rec:')+enc(n.nome)+':g':'fim:'+tipo)}
+
+/* ---------- telas ---------- */
+function barra(f,t){const p=t?Math.round(f/t*100):0;return `<div class="bar"><i style="width:${p}%"></i></div>`}
+function telaInicio(){
+  const ti=DB.ings.length,fi=DB.ings.filter(confI).length,tr=DB.recs.length,fr=DB.recs.filter(confR).length;
+  return `<h2>Olá, Eliana!</h2>
+  <div class="card"><b>Como funciona</b>
+  <ol class="steps"><li>Confira o <b>preço que você paga</b> em cada ingrediente.</li><li>Confira cada <b>receita</b>: quanto vai de cada coisa e quanto rende.</li><li>Se estiver certo, toque em <b>"Está certo"</b>. Se não, corrija e toque em <b>"Salvar"</b>.</li></ol>
+  <p class="small muted" style="margin-top:10px">Pode parar quando quiser. Na próxima vez, continua de onde parou.</p></div>
+  <button class="big-btn" onclick="comecar('i')"><span class="pos">Passo 1</span><b>Conferir ingredientes</b>${barra(fi,ti)}<span class="muted small">${fi} de ${ti} conferidos</span><br><span class="go">${fi<ti?(fi?'Continuar ›':'Começar ›'):'Tudo conferido ✓'}</span></button>
+  <button class="big-btn" onclick="comecar('r')"><span class="pos">Passo 2</span><b>Conferir receitas</b>${barra(fr,tr)}<span class="muted small">${fr} de ${tr} conferidas</span>${LS.get('tutR')?'':'<div class="tutnote">Antes de começar, vai aparecer um tutorial de 1 minuto. Assista até o fim e depois toque em “Começar”.</div>'}<br><span class="go">${fr<tr?(fr?'Continuar ›':'Começar ›'):'Tudo conferido ✓'}</span></button>
+  ${LS.get('tutR')?`<button class="btn link" onclick="ir('tut')">Ver o tutorial das receitas de novo</button>`:''}
+  <button class="btn link" onclick="ir('ajustes')">Configurações (só para o Matheus)</button>`;
+}
+function telaFim(t){
+  const i=t==='i';
+  return `<div class="done"><div class="ico">✓</div><h2>Pronto!</h2><p>Todos os ${i?'ingredientes':'produtos e receitas'} foram conferidos. Obrigado!</p></div>
+  ${i?`<button class="btn primary" onclick="comecar('r')">Agora conferir as receitas ›</button>`:''}
+  <button class="btn ghost" onclick="ir('inicio')">Voltar ao início</button>`;
+}
+function telaIngs(){
+  const b=view.busca.toLowerCase();let l=ordI();const nf=l.filter(x=>!confI(x)).length;
+  if(view.filtroI==='falta')l=l.filter(x=>!confI(x));
+  if(b)l=DB.ings.filter(i=>i.nome.toLowerCase().includes(b)).sort((x,y)=>x.nome.localeCompare(y.nome,'pt'));
+  return `<h2>Ingredientes</h2>
+  <input class="search" id="busca" type="search" placeholder="Procurar ingrediente…" value="${esc(view.busca)}" oninput="view.busca=this.value;atualizaLista()">
+  <div class="chips"><button class="chip" aria-pressed="${view.filtroI==='falta'}" onclick="view.filtroI='falta';render()">Falta conferir (${nf})</button><button class="chip" aria-pressed="${view.filtroI==='todos'}" onclick="view.filtroI='todos';render()">Todos</button></div>
+  <div class="list">${l.map(i=>`<button class="row" onclick="ir('ing:${enc(i.nome)}')"><div class="grow"><b>${esc(i.nome)}</b><span class="sub">${pacote(i)} por ${brl(i.preco)}</span></div>${confI(i)?'<span class="tag ok">✓ Conferido</span>':'<span class="tag none">Conferir</span>'}</button>`).join('')||`<p class="muted">${view.filtroI==='falta'&&!b?'Todos os ingredientes já foram conferidos.':'Nenhum ingrediente encontrado.'}</p>`}</div>
+  <button class="btn ghost" onclick="novoIng()">+ Ingrediente novo</button>`;
+}
+function pacote(i){if(i.un==='un')return `${fmtN(i.emb)} ${i.emb==1?'unidade':'unidades'}`;if(i.emb>=1000&&i.emb%100===0)return `${fmtN(i.emb/1000)} ${i.un==='g'?'kg':'litro'+(i.emb>1000?'s':'')}`;return `${fmtN(i.emb)} ${UNI[i.un]}`}
+function atualizaLista(){const el=$('#busca'),pos=el.selectionStart;render();const i=$('#busca');i.focus();try{i.setSelectionRange(pos,pos)}catch(e){}}
+function novoIng(){let n='Ingrediente novo',k=2;while(ING(n))n='Ingrediente novo '+k++;DB.ings.push({nome:n,un:'g',emb:1000,preco:0,_novo:true});ir('ing:'+enc(n))}
+
+/* --- ingrediente --- */
+function telaIng(nome,guia){
+  const i=ING(nome);if(!i)return '<p>Não encontrado.</p><button class="btn ghost" onclick="ir(\'ingredientes\')">Voltar</button>';
+  if(!edit||edit._orig!==nome){edit=JSON.parse(JSON.stringify(i));edit._orig=nome;edit._u=i.un==='un'?'un':(i.emb>=1000&&i.emb%100===0?(i.un==='g'?'kg':'L'):i.un);edit._q=edit._u==='kg'||edit._u==='L'?i.emb/1000:i.emb;edit.obs=edit.obs||'';orig=limpo(edit)}
+  const e=edit,L=ordI(),pos=L.findIndex(x=>x.nome===nome)+1;
+  const usos=DB.recs.filter(r=>r.itens.some(it=>it.t==='i'&&it.n===nome)).map(r=>r.nome);
+  return `<button class="back" onclick="ir(${guia?"'inicio'":"'ingredientes'"})">‹ ${guia?'Início':'Voltar'}</button>
+  ${guia?`<div class="pos">Ingrediente ${pos} de ${L.length}</div>`:''}
+  <h2>${esc(i.nome)}</h2>
+  ${confI(i)?`<p class="small"><span class="tag ok">✓ Conferido em ${esc(i.atual)}</span></p>`:''}
+  <div class="card hoje"><span>Está anotado assim:</span>${pacote(i)} por ${brl(i.preco)}
+  <button class="btn primary" id="top-btn" onclick="confirmaIng(${guia})">Está certo ✓</button></div>
+  <h3>Mudou? Corrija aqui</h3>
+  <label class="f" for="iq">Quanto vem no pacote?</label>
+  <div class="two"><input class="in" id="iq" inputmode="decimal" value="${fmtN(e._q)}" oninput="edit._q=num(this.value);calcIng()"><select class="in" aria-label="Unidade do pacote" onchange="edit._u=this.value;calcIng()">${[['g','gramas'],['kg','quilos'],['ml','ml'],['L','litros'],['un','unidades']].map(([v,t])=>`<option value="${v}" ${v===e._u?'selected':''}>${t}</option>`).join('')}</select></div>
+  <label class="f" for="ip">Quanto você pagou pelo pacote?</label>
+  <div class="qty" style="max-width:none"><span style="padding:0 0 0 14px">R$</span><input id="ip" style="width:100%;text-align:left;font-size:20px;padding:14px 10px" inputmode="decimal" value="${fmtM(e.preco)}" oninput="edit.preco=num(this.value)||0;calcIng()"></div>
+  <p class="muted small" id="per" style="margin-top:10px"></p>
+  <details ${e.obs?'open':''}><summary>Deixar recado para o Matheus</summary>
+  <textarea class="in" id="io" aria-label="Recado para o Matheus" placeholder="Ex.: compro no Seu Noel, o preço varia" oninput="edit.obs=this.value;calcIng()">${esc(e.obs)}</textarea></details>
+  <div class="actions"><button class="btn primary" id="main-btn" onclick="confirmaIng(${guia})"></button></div>
+  ${guia?`<button class="btn link" onclick="proximo('i',${JSON.stringify(nome).replace(/"/g,'&quot;')})">Pular por agora</button>`:''}
+  <h3>Usado em</h3><p class="small muted">${usos.length?usos.map(esc).join(' · '):'Nenhuma receita ainda.'}</p>
+  <details><summary>Mais opções</summary>
+    <label class="f" for="in">Nome do ingrediente</label><input class="in" id="in" value="${esc(e.nome)}" oninput="edit.nome=this.value.trim();calcIng()">
+    ${usos.length?'<p class="small muted">Para apagar, primeiro tire este ingrediente das receitas acima.</p>':'<button class="btn danger" onclick="apagarIng()">Apagar este ingrediente</button>'}
+  </details>`;
+}
+function calcIng(){const e=edit,q=e._q||0,u=e._u;e.un=u==='kg'?'g':u==='L'?'ml':u;e.emb=u==='kg'||u==='L'?q*1000:q;
+  const per=e.emb?e.preco/e.emb:null,el=$('#per');
+  if(el)el.textContent=per==null?'':`Então ${e.un==='un'?'cada unidade':e.un==='g'?'1 kg':'1 litro'} sai por ${brl(per*(e.un==='un'?1:1000))}.`;
+  const d=sujo(),b=$('#main-btn'),t=$('#top-btn');if(b)b.textContent=d?'Salvar mudança ✓':'Está certo ✓';if(t)t.style.display=d?'none':'';
+}
+function porUn(x){return x.emb?x.preco/x.emb*(x.un==='un'?1:1000):null}
+const nomeUn=u=>u==='un'?'unidade':u==='g'?'quilo':'litro';
+async function confereMudanca(a,e){
+  const usos=DB.recs.filter(r=>r.itens.some(it=>it.t==='i'&&it.n===a.nome)).length;
+  if(usos&&((a.un==='un')!==(e.un==='un'))){
+    if(!confirm(`Atenção: você mudou a unidade de "${a.nome}" de ${a.un==='un'?'UNIDADES':'PESO/VOLUME'} para ${e.un==='un'?'UNIDADES':'PESO/VOLUME'}.\n\nAs ${usos} receitas que usam este ingrediente continuam do jeito antigo e o custo vai sair errado.\n\nSalvar mesmo assim?`))return false}
+  const p0=porUn(a),p1=porUn(e);
+  if(p0&&p1&&(p1/p0>3||p0/p1>3)&&a.un===e.un){
+    if(!confirm(`O preço mudou muito:\n\nAntes: 1 ${nomeUn(a.un)} saía ${brl(p0)}\nAgora: 1 ${nomeUn(e.un)} sai ${brl(p1)}\n\nEstá certo?`))return false}
+  return true}
+async function confirmaIng(guia){
+  const e=edit;if(!e.nome){alert('Coloque o nome do ingrediente.');return}if(!e.emb){alert('Coloque quanto vem no pacote.');return}if(!e.preco&&!confirm('O preço está R$ 0,00. Está certo?'))return;
+  const antes=ING(e._orig);if(antes&&!antes._novo&&!(await confereMudanca(antes,e)))return;
+  const mudou=sujo();const obj={nome:e.nome,un:e.un,emb:e.emb,preco:e.preco||0,atual:hoje(),obs:e.obs||''};
+  const b=$('#main-btn'),t=$('#top-btn');b.disabled=true;b.textContent='Salvando…';if(t){t.disabled=true;t.textContent='Salvando…'}
+  if(await salvar('saveIng',{old:e._orig,obj})){toast(mudou?'Mudança salva ✓':'Conferido ✓');edit=null;if(guia)proximo('i',obj.nome);else ir('ingredientes')}
+  else{b.disabled=false;if(t){t.disabled=false;t.textContent='Está certo ✓'}calcIng()}
+}
+async function apagarIng(){if(!confirm('Apagar "'+edit._orig+'"? Isso não tem volta.'))return;
+  const n=edit._orig;if((ING(n)||{})._novo){DB.ings=DB.ings.filter(x=>x.nome!==n);edit=null;ir('ingredientes');return}
+  if(await salvar('del',{kind:'ing',nome:n})){toast('Apagado');edit=null;ir('ingredientes')}}
+
+/* --- receitas --- */
+function telaRecs(){
+  const b=view.busca.toLowerCase();let l=ordR();const nf=l.filter(x=>!confR(x)).length;
+  const nrev=l.filter(r=>r.tipo!=='base'&&['bad','warn'].includes(analise(r).tag)).length;
+  if(view.filtroR==='falta')l=l.filter(x=>!confR(x));
+  if(view.filtroR==='rever')l=l.filter(r=>r.tipo!=='base'&&['bad','warn'].includes(analise(r).tag));
+  if(b)l=ordR().filter(r=>r.nome.toLowerCase().includes(b));
+  const linha=r=>{const a=analise(r);return `<button class="row" onclick="ir('rec:${enc(r.nome)}')"><div class="grow"><b>${esc(r.nome)}</b><span class="sub">${r.tipo==='base'?`Rende ${fmtN(r.rende)} ${esc(r.un)}`:`Vende ${brl(r.preco)} · custa ${brl(a.un)}`}</span></div>${view.filtroR==='rever'?`<span class="tag ${a.tag}">${a.txt}</span>`:confR(r)?'<span class="tag ok">✓ Conferido</span>':'<span class="tag none">Conferir</span>'}</button>`};
+  const bases=l.filter(r=>r.tipo==='base'),prods=l.filter(r=>r.tipo!=='base');
+  return `<h2>Receitas</h2>
+  <input class="search" id="busca" type="search" placeholder="Procurar receita…" value="${esc(view.busca)}" oninput="view.busca=this.value;atualizaLista()">
+  <div class="chips"><button class="chip" aria-pressed="${view.filtroR==='falta'}" onclick="view.filtroR='falta';render()">Falta conferir (${nf})</button><button class="chip" aria-pressed="${view.filtroR==='todos'}" onclick="view.filtroR='todos';render()">Todas</button><button class="chip" aria-pressed="${view.filtroR==='rever'}" onclick="view.filtroR='rever';render()">Preço a rever (${nrev})</button></div>
+  ${bases.length?`<h3>Preparos da casa</h3><p class="small muted">Coisas que você faz e usa dentro de outros produtos (pão, bacon frito, pesto…).</p><div class="list">${bases.map(linha).join('')}</div>`:''}
+  ${prods.length?`<h3>Produtos do cardápio</h3><div class="list">${prods.map(linha).join('')}</div>`:''}
+  ${!l.length?`<p class="muted">${view.filtroR==='falta'&&!b?'Todas as receitas já foram conferidas.':'Nenhuma receita encontrada.'}</p>`:''}
+  <button class="btn ghost" onclick="novaRec('produto')">+ Produto novo</button>
+  <button class="btn ghost" onclick="novaRec('base')">+ Preparo novo</button>`;
+}
+function novaRec(tipo){const nome=tipo==='base'?'Preparo novo':'Produto novo';let n=nome,k=2;while(REC(n))n=nome+' '+k++;DB.recs.push({nome:n,tipo,preco:null,rende:1,un:tipo==='base'?'gramas':'unidades',itens:[],_novo:true});ir('rec:'+enc(n))}
+function telaRec(nome,guia){
+  const r=REC(nome);if(!r)return '<p>Não encontrado.</p><button class="btn ghost" onclick="ir(\'receitas\')">Voltar</button>';
+  if(!edit||edit._orig!==nome){edit=JSON.parse(JSON.stringify(r));edit._orig=nome;edit.obs=edit.obs||'';orig=limpo(edit)}
+  const e=edit,base=e.tipo==='base',L=ordR(),pos=L.findIndex(x=>x.nome===nome)+1,av=avisosRec(e);
+  const opts=ordI().map(i=>`<option value="i|${esc(i.nome)}">${esc(i.nome)}</option>`).join('')+'<option disabled>──────────</option>'+DB.recs.filter(x=>x.tipo==='base'&&x.nome!==e.nome).map(x=>`<option value="r|${esc(x.nome)}">${esc(x.nome)} (preparo)</option>`).join('');
+  return `<button class="back" onclick="ir(${guia?"'inicio'":"'receitas'"})">‹ ${guia?'Início':'Voltar'}</button>
+  ${guia?`<div class="pos">Receita ${pos} de ${L.length}</div>`:''}
+  <h2>${esc(e.nome)}</h2>
+  <p class="small muted">${base?'Preparo da casa (usado em outros produtos)':'Produto do cardápio'}${confR(r)?` · <span class="tag ok">✓ Conferido em ${esc(r.conf)}</span>`:''}</p>
+  ${av.length?`<div class="aviso"><b>Confira com atenção:</b><ul>${av.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:''}
+  ${base?'':`<label class="f" for="rp">Preço de venda no cardápio</label><div class="qty"><span style="padding:0 0 0 14px">R$</span><input id="rp" style="width:100%;text-align:left;font-size:20px;padding:14px 10px" inputmode="decimal" value="${e.preco==null?'':fmtM(e.preco)}" oninput="edit.preco=num(this.value);calcRec()"></div>`}
+  <label class="f">Quanto rende a receita inteira?</label><p class="help">Ex.: um bolo rende 12 fatias. Um café rende 1 xícara.</p>
+  <div class="two"><input class="in" inputmode="decimal" aria-label="Rendimento" value="${fmtN(e.rende)}" oninput="edit.rende=num(this.value);calcRec()"><select class="in" aria-label="Unidade do rendimento" onchange="edit.un=this.value;calcRec()">${['unidades','fatias','porções','xícaras','copos','gramas'].map(u=>`<option ${u===e.un?'selected':''}>${u}</option>`).join('')}</select></div>
+  <h3>O que vai na receita inteira</h3>
+  <div>${e.itens.map((it,k)=>`<div class="item${suspeito(e,it)?' flag':''}"><div class="nm">${esc(it.n)}<small id="c${k}"></small></div><label class="qty"><input inputmode="decimal" value="${fmtN(it.q)}" aria-label="Quantidade de ${esc(it.n)}" oninput="edit.itens[${k}].q=num(this.value)||0;calcRec()"><span>${esc(unItem(it))}</span></label><button class="x" aria-label="Tirar ${esc(it.n)}" onclick="tirarItem(${k})">×</button></div>`).join('')||'<p class="muted">Nenhum ingrediente ainda.</p>'}</div>
+  <details ${e.itens.length?'':'open'}><summary>+ Adicionar ingrediente</summary>
+    <select class="in" id="add" onchange="mostraUn()"><option value="">Escolha o ingrediente…</option>${opts}</select>
+    <div class="two" style="margin-top:10px"><label class="qty"><input id="addq" inputmode="decimal" placeholder="Quantidade" style="width:100%;text-align:left"><span id="addu"></span></label><button class="btn ghost" style="margin:0" onclick="addItem()">Adicionar</button></div>
+  </details>
+  <div class="card" id="resumo"></div>
+  <details ${e.obs?'open':''}><summary>Deixar recado para o Matheus</summary>
+  <textarea class="in" id="ro" aria-label="Recado para o Matheus" placeholder="Ex.: esse produto saiu do cardápio" oninput="edit.obs=this.value;calcRec()">${esc(e.obs)}</textarea></details>
+  <div class="actions"><button class="btn primary" id="main-btn" onclick="confirmaRec(${guia})"></button></div>
+  ${guia?`<button class="btn link" onclick="proximo('r',${JSON.stringify(nome).replace(/"/g,'&quot;')})">Pular por agora</button>`:''}
+  <details><summary>Mais opções</summary>
+    <label class="f" for="rn">Nome</label><input class="in" id="rn" value="${esc(e.nome)}" oninput="edit.nome=this.value.trim();calcRec()">
+    <button class="btn danger" onclick="apagarRec()">Apagar ${base?'este preparo':'este produto'}</button>
+  </details>`;
+}
+function mostraUn(){const v=$('#add').value;if(!v){$('#addu').textContent='';return}const [t,n]=v.split('|');$('#addu').textContent=unItem({t,n})}
+function calcRec(){
+  const e=edit;if(!e)return;const a=analise(e),c=DB.cfg,base=e.tipo==='base';
+  e.itens.forEach((it,k)=>{const el=$('#c'+k);if(el){const v=custoItem(it);el.textContent=v==null?'não encontrado':brl(v)}});
+  const rs=$('#resumo');
+  if(rs)rs.innerHTML=a.un==null?'<b>Custo:</b> falta algum dado para calcular.':
+   base?`<b>Custo de 1 ${esc(unSing(e.un))}:</b> ${brl(a.un)}<br><span class="small muted">Receita inteira: ${brl(a.tot)}</span>`:
+   `<b>Ingredientes custam ${brl(a.un)}</b> por ${esc(unSing(e.un))}${a.pct!=null?` <span class="tag ${a.tag}">${a.txt}</span><br><span class="small muted">São ${a.pct.toFixed(0)}% do preço. O ideal é até ${c.meta}%.${a.tag!=='ok'?` Preço mínimo pela meta: ${brl(a.sug)}.`:''}</span>`:''}`;
+  const b=$('#main-btn');if(b)b.textContent=sujo()?'Salvar mudança ✓':'Está certo ✓';
+}
+function tirarItem(k){if(!confirm('Tirar "'+edit.itens[k].n+'" desta receita?'))return;edit.itens.splice(k,1);render()}
+function addItem(){const v=$('#add').value,q=num($('#addq').value);if(!v){alert('Escolha o ingrediente na lista.');return}if(!q){alert('Coloque a quantidade.');return}const [t,n]=v.split('|');edit.itens.push({t,n,q});render();toast('Adicionado. Lembre de salvar.')}
+async function confirmaRec(guia){
+  const e=edit;if(!e.nome){alert('Coloque um nome.');return}if(!e.rende){alert('Coloque quanto rende a receita.');return}
+  const mudou=sujo();const obj={nome:e.nome,tipo:e.tipo,preco:e.preco??null,rende:e.rende,un:e.un,itens:e.itens,conf:hoje(),obs:e.obs||''};
+  const b=$('#main-btn');b.disabled=true;b.textContent='Salvando…';
+  if(await salvar('saveRec',{old:e._orig,obj})){toast(mudou?'Mudança salva ✓':'Conferido ✓');edit=null;if(guia)proximo('r',obj.nome);else ir('receitas')}
+  else{b.disabled=false;calcRec()}
+}
+async function apagarRec(){if(!confirm('Apagar "'+edit._orig+'"? Isso não tem volta.'))return;
+  const n=edit._orig;if((REC(n)||{})._novo){DB.recs=DB.recs.filter(x=>x.nome!==n);edit=null;ir('receitas');return}
+  if(await salvar('del',{kind:'rec',nome:n})){toast('Apagado');edit=null;ir('receitas')}}
+
+
+/* ---------- tutorial do passo 2 ---------- */
+let tutId=0;
+const dorme=ms=>new Promise(r=>setTimeout(r,ms));
+function telaTut(){
+  return `<button class="back" onclick="ir('inicio')">‹ Início</button>
+  <div class="pos">Passo 2 · Tutorial de 1 minuto</div><h2>Como conferir uma receita</h2>
+  <p class="small muted">É só assistir. Não precisa tocar em nada.</p>
+  <div class="bar"><i id="tbar" style="width:0%;transition:width .6s"></i></div>
+  <div class="tcap" id="tcap"><small>PREPARANDO…</small></div>
+  <div class="stage" id="stage"><span class="dtag">EXEMPLO</span>
+    <b style="font-size:22px;display:block;padding-right:90px">Bolo de fubá</b>
+    <div class="aviso fade" id="d-av"><b>Confira com atenção:</b><ul><li>Quantidade muito pequena: 1 ml de Leite.</li></ul></div>
+    <label class="f">Quanto rende a receita inteira?</label>
+    <div class="two" id="d-rende"><div class="in dfake">12</div><div class="in dfake">fatias</div></div>
+    <h3>O que vai na receita inteira</h3>
+    <div id="d-itens">
+      <div class="item"><div class="nm">Ovos<small>R$ 2,53</small></div><div class="qty"><span class="dq">4</span><span>unid.</span></div><div class="x" id="d-x">×</div></div>
+      <div class="item"><div class="nm">Farinha de trigo<small>R$ 1,50</small></div><div class="qty"><span class="dq">300</span><span>g</span></div><div class="x">×</div></div>
+      <div class="item flag" id="d-leite"><div class="nm">Leite<small id="d-lc">R$ 0,01</small></div><div class="qty" id="d-lq"><span class="dq" id="d-lv">1</span><span>ml</span></div><div class="x">×</div></div>
+    </div>
+    <div class="dsum" id="d-add">+ Adicionar ingrediente</div>
+    <div id="d-addbox" class="fade out"><div class="in dfake" id="d-sel">Escolha o ingrediente…</div>
+      <div class="two" style="margin-top:8px"><div class="qty" id="d-aqb"><span class="dq" id="d-aq"></span><span>g</span></div><div class="btn ghost" id="d-addbtn" style="margin:0;text-align:center">Adicionar</div></div></div>
+    <div class="btn primary" id="d-save" style="text-align:center;margin-top:16px">Está certo ✓</div>
+    <div class="btn link" id="d-pular" style="text-align:center;margin-top:4px">Pular por agora</div>
+    <div class="dtoast" id="d-toast">Mudança salva ✓</div>
+    <div class="finger" id="finger">👆</div>
+  </div>
+  <button class="btn primary" id="tgo" disabled onclick="fimTut()">Assista até o fim…</button>
+  <button class="btn link" id="tre" onclick="ir('tut')" style="display:none">Ver o tutorial de novo</button>`}
+async function rodaTut(){
+  const id=++tutId,ok=()=>id===tutId&&$('#stage');
+  const st=$('#stage'),f=$('#finger'),cap=$('#tcap'),bar=$('#tbar');
+  if(!st)return;
+  const reset=()=>{};const g=$('#tgo'),re=$('#tre');if(re)re.style.display='none';
+  const N=7;let k=0;
+  const passo=(t)=>{k++;cap.innerHTML=`<small>PARTE ${Math.min(k,N)} DE ${N}</small>${t}`;bar.style.width=(k/N*100)+'%'};
+  const hl=el=>{st.querySelectorAll('.hl2').forEach(x=>x.classList.remove('hl2'));if(el)el.classList.add('hl2')};
+  const vai=async el=>{const a=st.getBoundingClientRect(),r=el.getBoundingClientRect();f.style.left=(r.left-a.left+r.width/2-14)+'px';f.style.top=(r.top-a.top+r.height/2-6)+'px';
+    const y=r.top+scrollY-window.innerHeight*0.55;window.scrollTo({top:Math.max(0,y),behavior:'smooth'});await dorme(1000)};
+  const toca=async el=>{const a=st.getBoundingClientRect(),r=el.getBoundingClientRect();const d=document.createElement('div');d.className='ripple';d.style.left=(r.left-a.left+r.width/2)+'px';d.style.top=(r.top-a.top+r.height/2)+'px';st.appendChild(d);setTimeout(()=>d.remove(),800);await dorme(500)};
+  const digita=async(el,txt)=>{el.textContent='';for(const c of txt){if(!ok())return;el.textContent+=c;await dorme(320)}};
+  if(g){g.disabled=true;g.textContent='Assista até o fim…'}
+  await dorme(600);if(!ok())return;
+  passo('O <b>quadro amarelo</b> aparece quando algo parece errado na receita. Leia com calma.');
+  const av=$('#d-av');hl(av);await vai(av);await dorme(5000);if(!ok())return;
+  passo('Confira <b>quanto a receita inteira rende</b>. Exemplo: 1 bolo dá 12 fatias.');
+  const rd=$('#d-rende');hl(rd);await vai(rd);await dorme(5000);if(!ok())return;
+  passo('Cada linha é quanto vai na <b>receita inteira</b>. O leite estava “1 ml”? Toque no número e corrija. <b>1 litro = 1000 ml</b>.');
+  const lq=$('#d-lq');hl(lq);await vai(lq);await toca(lq);await digita($('#d-lv'),'1000');if(!ok())return;
+  $('#d-leite').classList.remove('flag');$('#d-lc').textContent='R$ 5,29';av.classList.add('out');$('#d-save').textContent='Salvar mudança ✓';await dorme(3200);if(!ok())return;
+  passo('O <b>×</b> tira da receita um ingrediente que não vai nela.');
+  const x=$('#d-x');hl(x);await vai(x);await dorme(4500);if(!ok())return;
+  passo('Faltou algum ingrediente? Toque em <b>“+ Adicionar ingrediente”</b>, escolha na lista, escreva a quantidade e toque em <b>“Adicionar”</b>.');
+  const ad=$('#d-add');hl(ad);await vai(ad);await toca(ad);$('#d-addbox').classList.remove('out');await dorme(700);
+  const sel=$('#d-sel');hl(sel);await vai(sel);await toca(sel);sel.textContent='Canela';await dorme(700);if(!ok())return;
+  const aq=$('#d-aqb');hl(aq);await vai(aq);await toca(aq);await digita($('#d-aq'),'5');await dorme(400);
+  const ab=$('#d-addbtn');hl(ab);await vai(ab);await toca(ab);if(!ok())return;
+  $('#d-itens').insertAdjacentHTML('beforeend','<div class="item"><div class="nm">Canela<small>R$ 0,15</small></div><div class="qty"><span class="dq">5</span><span>g</span></div><div class="x">×</div></div>');
+  $('#d-addbox').classList.add('out');sel.textContent='Escolha o ingrediente…';$('#d-aq').textContent='';hl(null);await dorme(2500);if(!ok())return;
+  passo('No final, toque no <b>botão verde</b>. Se você mudou algo, ele diz <b>“Salvar mudança”</b>. Se estava tudo certo, diz <b>“Está certo”</b>.');
+  const sv=$('#d-save');hl(sv);await vai(sv);await dorme(1500);await toca(sv);$('#d-toast').classList.add('on');await dorme(3200);if(!ok())return;$('#d-toast').classList.remove('on');
+  passo('Não sabe alguma coisa? Toque em <b>“Pular por agora”</b> ou deixe um <b>recado para o Matheus</b>. Pode parar quando quiser.');
+  const pl=$('#d-pular');hl(pl);await vai(pl);await dorme(5000);if(!ok())return;
+  hl(null);f.style.opacity='0';
+  cap.innerHTML='<small>PRONTO!</small>Agora é com você. Toque em <b>“Começar a conferir”</b> aqui embaixo.';bar.style.width='100%';
+  LS.set('tutR','1');
+  if(g){g.disabled=false;g.textContent='Começar a conferir ›';g.scrollIntoView({behavior:'smooth',block:'center'})}
+  if(re)re.style.display='';
+}
+function fimTut(){LS.set('tutR','1');comecar('r')}
+
+/* --- ajustes --- */
+function telaAjustes(){const c=DB.cfg;
+  return `<button class="back" onclick="ir('inicio')">‹ Início</button><h2>Configurações</h2><p class="muted">Só para o Matheus.</p>
+  <label class="f" for="cm">Meta: ingredientes até quantos % do preço?</label><input class="in" id="cm" inputmode="decimal" value="${fmtN(c.meta)}">
+  <label class="f" for="ct">Taxa da maquininha (%)</label><input class="in" id="ct" inputmode="decimal" value="${fmtN(c.taxa)}">
+  <label class="f" for="ci">Imposto do Simples (%)</label><input class="in" id="ci" inputmode="decimal" value="${fmtN(c.imposto)}">
+  <button class="btn primary" onclick="salvarCfg()">Salvar configurações</button>
+  <h3>Planilha</h3><p class="small muted">${API?'Conectado à planilha do Google.':'Não conectado: os dados ficam só neste aparelho.'}</p>
+  <label class="f" for="api">Link do Apps Script</label><input class="in" id="api" value="${esc(API)}" placeholder="https://script.google.com/macros/s/…/exec">
+  <button class="btn ghost" onclick="conectar()">Conectar</button>
+  ${API?`<button class="btn ghost" onclick="copiaLink()">Copiar link para enviar à Eliana</button><button class="btn danger" onclick="if(confirm('Desconectar da planilha?')){API='';LS.set('api','');carregar()}">Desconectar</button>`:''}
+  <h3>Recados</h3>${recados()}
+  <h3>Como o custo é calculado</h3><p class="small muted">Só os ingredientes entram no custo. Aluguel, luz e equipe são pagos pela sobra de todas as vendas do mês. A cor usa a meta acima; a sobra desconta maquininha e imposto.</p>`}
+function recados(){const l=[...DB.ings.filter(i=>i.obs).map(i=>[i.nome,i.obs,'ing']),...DB.recs.filter(r=>r.obs).map(r=>[r.nome,r.obs,'rec'])];
+  return l.length?`<div class="list">${l.map(([n,o,t])=>`<button class="row" onclick="ir('${t}:${enc(n)}')"><div class="grow"><b>${esc(n)}</b><span class="sub">${esc(o)}</span></div></button>`).join('')}</div>`:'<p class="small muted">Nenhum recado.</p>'}
+function copiaLink(){const u=location.origin+'/?api='+encodeURIComponent(API);(navigator.clipboard?navigator.clipboard.writeText(u):Promise.reject()).then(()=>toast('Link copiado ✓'),()=>prompt('Copie o link:',u))}
+async function salvarCfg(){const cfg={meta:num($('#cm').value)||30,taxa:num($('#ct').value)??8,imposto:num($('#ci').value)??5};if(await salvar('saveCfg',{cfg})){toast('Salvo ✓');render()}}
+async function conectar(){const novo=$('#api').value.trim();if(!novo){alert('Cole o link primeiro');return}API=novo;LS.set('api',API);const loc=LS.get('local');
+  if(loc&&confirm('Enviar os preços e receitas deste aparelho para a planilha? Isso substitui o que está na planilha.')){status('Enviando…');try{const d=JSON.parse(loc);const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'importAll',ings:d.ings.map(({_novo,...x})=>x),recs:d.recs.map(({_novo,...x})=>x),cfg:d.cfg})});const j=await r.json();if(j.erro)throw new Error(j.erro);toast('Dados enviados ✓')}catch(e){alert('Não consegui enviar: '+(e.message||'erro'))}}
+  carregar()}
+
+/* calcula campos depois de desenhar */
+const _render=render;render=function(){_render();if(view.tela.startsWith('ing:'))calcIng();if(view.tela.startsWith('rec:'))calcRec()};
+document.addEventListener('focusin',e=>{if(e.target.matches('input,textarea'))document.body.classList.add('typing')});
+document.addEventListener('focusout',()=>setTimeout(()=>{if(!document.activeElement||!document.activeElement.matches('input,textarea'))document.body.classList.remove('typing')},100));
+window.addEventListener('beforeunload',e=>{if(sujo()){e.preventDefault();e.returnValue=''}});
+carregar();
+</script>
+</body>
+</html>

@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Diagnóstico Café Mantiqueira</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0E1A18; --ink2:#152925; --moss:#23423B; --sage:#8FAFA3; --sage-d:#5C7F73;
+  --paper:#F3F5F0; --paper2:#E6EBE3; --line:#CFD8CD;
+  --mel:#D9A441; --brick:#B3543F; --ok:#3E7A5E;
+  --r:10px; --w:1180px;
+  --shadow:0 1px 2px rgba(14,26,24,.06), 0 8px 24px -12px rgba(14,26,24,.18);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper); color:var(--ink);
+  font:400 15px/1.55 Inter,system-ui,-apple-system,Segoe UI,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{font-family:'Bricolage Grotesque',Inter,sans-serif;font-weight:800;letter-spacing:-.02em;margin:0}
+code,.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+textarea,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--mel);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- topo ---------- */
+.top{position:sticky;top:0;z-index:40;background:var(--ink);color:var(--paper)}
+.top-in{max-width:var(--w);margin:0 auto;padding:10px 18px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.brand{font-family:'Bricolage Grotesque';font-weight:800;font-size:15px;letter-spacing:-.02em;line-height:1.1}
+.brand span{display:block;font-family:Inter;font-weight:500;font-size:11px;color:var(--sage);letter-spacing:.06em;text-transform:uppercase}
+.who{display:flex;gap:2px;background:var(--ink2);border-radius:99px;padding:3px}
+.who button{padding:6px 14px;border-radius:99px;font-size:13px;font-weight:600;color:var(--sage)}
+.who button[aria-pressed=true]{background:var(--paper);color:var(--ink)}
+.top .grow{flex:1}
+.sync{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--sage)}
+.dot{width:7px;height:7px;border-radius:99px;background:var(--sage-d);flex:none}
+.dot.on{background:var(--mel)}
+.dot.err{background:var(--brick)}
+.tbtn{padding:6px 12px;border-radius:var(--r);background:var(--ink2);color:var(--paper);font-size:13px;font-weight:500}
+.tbtn:hover{background:var(--moss)}
+
+/* ---------- barra de progresso tipo comanda ---------- */
+.ticks{max-width:var(--w);margin:0 auto;padding:0 18px 10px;display:flex;gap:2px}
+.tick{height:4px;flex:1;background:var(--ink2);border-radius:1px}
+.tick.f{background:var(--mel)}
+.tick.e{background:var(--sage-d)}
+
+/* ---------- layout ---------- */
+.wrap{max-width:var(--w);margin:0 auto;padding:22px 18px 90px;display:grid;grid-template-columns:250px 1fr;gap:30px;align-items:start}
+@media(max-width:900px){.wrap{grid-template-columns:1fr;gap:16px;padding-top:14px}#main{order:-1}}
+
+/* ---------- farol (assinatura) ---------- */
+.rail{position:sticky;top:74px}
+@media(max-width:900px){.rail{position:static}}
+.farol{background:var(--ink);color:var(--paper);border-radius:var(--r);padding:15px 15px 8px;margin-bottom:16px}
+.farol h2{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--mel);font-weight:600;font-family:Inter}
+.farol p{margin:6px 0 12px;font-size:12px;line-height:1.45;color:var(--sage)}
+.fitem{display:flex;gap:9px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--ink2);cursor:pointer;width:100%;text-align:left}
+.fdot{width:9px;height:9px;border-radius:99px;border:1.5px solid var(--sage-d);margin-top:4px;flex:none}
+.fdot.done{background:var(--mel);border-color:var(--mel)}
+.fitem b{display:block;font-size:12.5px;font-weight:600;line-height:1.3}
+.fitem em{display:block;font-style:normal;font-size:11px;color:var(--sage);margin-top:1px}
+
+.nav{border:1px solid var(--line);border-radius:var(--r);background:#fff;overflow:hidden}
+.nav-h{padding:9px 13px;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--sage-d);font-weight:600;background:var(--paper2)}
+.nav button{display:flex;width:100%;gap:9px;align-items:center;padding:8px 13px;font-size:13.5px;border-bottom:1px solid var(--paper2);text-align:left}
+.nav button:last-child{border-bottom:0}
+.nav button:hover{background:var(--paper)}
+.nav button[aria-current=true]{background:var(--moss);color:#fff}
+.nav .k{font-family:'JetBrains Mono';font-size:11px;font-weight:700;width:16px;flex:none;color:var(--sage-d)}
+.nav button[aria-current=true] .k{color:var(--mel)}
+.nav .n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav .c{font-family:'JetBrains Mono';font-size:10.5px;color:var(--sage-d)}
+.nav button[aria-current=true] .c{color:var(--sage)}
+
+/* ---------- conteúdo ---------- */
+.bhead{margin-bottom:18px}
+.eyebrow{font-family:'JetBrains Mono';font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--sage-d)}
+.bhead h1{font-size:clamp(23px,4vw,31px);margin:5px 0 0;line-height:1.1}
+.bhead .note{margin-top:11px;padding:11px 13px;background:#fff;border:1px solid var(--line);border-left:3px solid var(--mel);border-radius:0 var(--r) var(--r) 0;font-size:13.5px;line-height:1.55}
+.bhead .note b{font-weight:600}
+
+.q{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:14px 15px;margin-bottom:11px;box-shadow:var(--shadow);scroll-margin-top:86px}
+.q.ess{border-left:3px solid var(--mel)}
+.qh{display:flex;gap:9px;align-items:baseline;margin-bottom:9px}
+.qid{font-family:'JetBrains Mono';font-size:12px;font-weight:700;color:var(--moss);flex:none}
+.qt{flex:1;font-size:14.5px;font-weight:500;line-height:1.45}
+.badge{font-size:10px;font-family:'JetBrains Mono';font-weight:700;letter-spacing:.06em;color:var(--mel);flex:none;text-transform:uppercase}
+textarea{width:100%;min-height:74px;padding:10px 11px;border:1px solid var(--line);border-radius:8px;background:var(--paper);resize:vertical;line-height:1.5}
+textarea:focus{background:#fff;border-color:var(--sage-d)}
+.qf{display:flex;justify-content:space-between;align-items:center;margin-top:7px;font-size:11.5px;color:var(--sage-d);min-height:16px}
+.by{font-family:'JetBrains Mono';font-size:11px}
+.chip{padding:2px 7px;border-radius:99px;background:var(--paper2);font-size:11px}
+
+/* tabela mapa do conhecimento */
+.map{background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+.map-r{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:9px 13px;border-bottom:1px solid var(--paper2)}
+.map-r:last-child{border-bottom:0}
+.map-r span{font-size:13.5px}
+.seg{display:flex;gap:3px}
+.seg button{width:30px;height:28px;border-radius:6px;background:var(--paper2);font-family:'JetBrains Mono';font-size:12px;font-weight:700;color:var(--sage-d)}
+.seg button[aria-pressed=true]{background:var(--moss);color:#fff}
+.seg button[data-v=C][aria-pressed=true]{background:var(--mel);color:var(--ink)}
+@media(max-width:900px){.seg button{width:42px;height:40px}}
+
+/* checklist */
+.chk{background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+.chk label{display:flex;gap:10px;align-items:flex-start;padding:10px 13px;border-bottom:1px solid var(--paper2);cursor:pointer;font-size:13.5px}
+.chk label:last-child{border-bottom:0}
+.chk input{margin-top:2px;width:16px;height:16px;accent-color:var(--moss);flex:none}
+
+/* guia / roteiro */
+.guide{background:var(--ink);color:var(--paper);border-radius:var(--r);padding:15px 16px;margin-bottom:12px}
+.guide h3{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--mel);font-family:Inter;font-weight:600;margin-bottom:9px}
+.guide p{margin:0 0 8px;font-size:13.5px;line-height:1.55;color:#DCE5DE}
+.guide p:last-child{margin-bottom:0}
+.guide ol,.guide ul{margin:0;padding-left:19px;font-size:13.5px;line-height:1.6;color:#DCE5DE}
+.guide li{margin-bottom:4px}
+.guide .say{background:var(--ink2);border-left:2px solid var(--mel);padding:9px 11px;border-radius:0 6px 6px 0;font-style:italic;margin:9px 0}
+.guide strong{color:#fff}
+
+.rules{background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:12px}
+.rules div{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:9px 13px;border-bottom:1px solid var(--paper2);font-size:13px}
+.rules div:last-child{border-bottom:0}
+.rules .no{color:var(--brick)}
+.rules .yes{color:var(--ok)}
+.rules .hd{background:var(--paper2);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;font-weight:600;color:var(--sage-d)}
+
+/* rodapé fixo */
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:45;background:var(--ink);color:var(--paper);border-top:1px solid var(--ink2)}
+.bar-in{max-width:var(--w);margin:0 auto;padding:9px 18px;display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.bar .pg{flex:1;font-size:12px;color:var(--sage);min-width:110px}
+.bar .pg b{color:var(--paper);font-family:'JetBrains Mono'}
+.nx{padding:8px 15px;border-radius:var(--r);background:var(--mel);color:var(--ink);font-weight:600;font-size:13.5px}
+.nx:hover{filter:brightness(1.06)}
+
+.setup{max-width:640px;margin:60px auto;padding:26px;background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.setup h1{font-size:24px;margin-bottom:10px}
+.setup p{font-size:14px;line-height:1.6;color:#3A4A46}
+.setup input{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:8px;margin:12px 0;font-family:'JetBrains Mono';font-size:12px}
+.setup button{padding:10px 18px;border-radius:var(--r);background:var(--ink);color:var(--paper);font-weight:600}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="top-in">
+    <div class="brand">Diagnóstico Café Mantiqueira<span>Ficha de campo</span></div>
+    <div class="who" role="group" aria-label="Quem está preenchendo">
+      <button id="wM" onclick="setWho('matheus')" aria-pressed="false">Matheus</button>
+      <button id="wL" onclick="setWho('lara')" aria-pressed="false">Lara</button>
+    </div>
+    <div class="grow"></div>
+    <label class="sync" style="cursor:pointer"><input type="checkbox" id="essOnly" onchange="render()" style="accent-color:var(--mel)"> só essenciais</label>
+    <div class="sync"><span class="dot" id="sdot"></span><span id="stext">local</span></div>
+    <button class="tbtn" onclick="exportMd()">Baixar</button>
+  </div>
+  <div class="ticks" id="ticks" aria-hidden="true"></div>
+</div>
+
+<div id="setup" class="setup hide">
+  <h1>Conectar a planilha</h1>
+  <p>Cole aqui a URL do aplicativo da web do Apps Script. É o que permite você e a Lara preencherem ao mesmo tempo, cada um vendo o que o outro escreveu.</p>
+  <input id="apiIn" placeholder="https://script.google.com/macros/s/.../exec" spellcheck="false">
+  <button onclick="saveApi()">Conectar</button>
+  <button onclick="document.getElementById('apiIn').value='';saveApi()" style="background:none;color:var(--sage-d);text-decoration:underline;padding:10px 12px">Continuar sem conectar</button>
+  <p style="margin-top:14px;font-size:13px">Sem conexão o formulário funciona igual, mas as respostas ficam só neste aparelho e não são compartilhadas.</p>
+</div>
+
+<div class="wrap" id="app">
+  <aside class="rail">
+    <div class="farol">
+      <h2>As cinco decisivas</h2>
+      <p>Cinco respostas definem o plano inteiro. O resto é contexto.</p>
+      <div id="farol"></div>
+    </div>
+    <nav class="nav" id="nav"><div class="nav-h">Blocos</div></nav>
+  </aside>
+  <main id="main"></main>
+</div>
+
+<div class="bar"><div class="bar-in">
+  <div class="pg" id="pg"></div>
+  <button class="tbtn" onclick="prevB()">Anterior</button>
+  <button class="nx" onclick="nextB()">Próximo bloco</button>
+</div></div>
+
+<script>
+/* ============ CONFIGURE AQUI ============
+   Cole a URL do app da web do Apps Script entre as aspas.  */
+const API_URL = "https://script.google.com/macros/s/AKfycbx3BOrsNV5ECBRdUHFykKt_EkGcGuCa_q53ljs0GJRCavWxKZNTkZ-lVnoVA50CNbVG/exec";
+/* SOLO_LARA: a Lara coleta tudo. Abre o formulário inteiro, já como "lara",
+   sem tela de conectar e sem alternador. Para voltar ao modo de dois
+   preenchedores, troque para false. */
+const SOLO_LARA = true;
+/* ======================================= */
+
+/* ---- armazenamento local tolerante a falha ---- */
+const mem={};
+const store={
+  get(k){try{return localStorage.getItem(k)}catch(e){return mem[k]??null}},
+  set(k,v){try{localStorage.setItem(k,v)}catch(e){mem[k]=v}}
+};
+
+let API = API_URL || store.get('cm.api') || '';
+let who = store.get('cm.who') || '';
+let data = JSON.parse(store.get('cm.data') || '{}');   // id -> {v, who, ts}
+let cur = 0, dirty = {}, polling = null;
+
+/* ================= CONTEÚDO ================= */
+const BLOCKS = [
+ {k:'0', o:'ambos', t:'Enquadramento', guide:'frame'},
+ {k:'A', o:'matheus', t:'Sociedade e estrutura'},
+ {k:'B', o:'matheus', t:'História e identidade'},
+ {k:'C', o:'matheus', t:'Pessoas'},
+ {k:'D', o:'matheus', t:'Produção'},
+ {k:'E', o:'matheus', t:'Compras e fornecedores'},
+ {k:'F', o:'matheus', t:'Espaço e capacidade'},
+ {k:'G', o:'matheus', t:'Cliente e mercado'},
+ {k:'H', o:'matheus', t:'Sistemas e controle'},
+ {k:'I', o:'matheus', t:'Você'},
+ {k:'J', o:'matheus', t:'Mapa do conhecimento', special:'map'},
+ {k:'K', o:'lara', t:'A pergunta central', note:'<b>Domingo, entre 9h e 11h.</b> Uma resposta clara aqui vale mais que todo o resto. Cada possibilidade leva a uma solução diferente.'},
+ {k:'L', o:'lara', t:'Fotos', special:'chk'},
+ {k:'M', o:'lara', t:'Observação — fluxo'},
+ {k:'N', o:'lara', t:'Observação — coordenação'},
+ {k:'O', o:'lara', t:'Observação — ritmo e clima'},
+ {k:'P', o:'lara', t:'Entrevista com a equipe', guide:'team'},
+ {k:'Q', o:'lara', t:'Conversa com a mãe', guide:'mae'},
+ {k:'R', o:'lara', t:'Devolutiva', guide:'devol'}
+];
+
+const Q = [
+ ['0.4','0',1,'Quem vai conversar com a mãe: você, a Lara, ou os dois juntos? Registre a decisão.'],
+ ['0.2','0',1,'A conversa de transparência com a mãe já aconteceu? Quando, e como ela reagiu?'],
+
+ ['A1','A',1,'Quem são os sócios e qual a participação de cada um?'],
+ ['A2','A',1,'Quem responde legalmente pela empresa? Qual o regime tributário?'],
+ ['A3','A',1,'Como funcionam as retiradas hoje — valor fixo, sobra do mês, conforme necessidade?'],
+ ['A4','A',0,'Existe contrato social ou acordo escrito sobre retirada e decisão?'],
+ ['A5','A',0,'Alguém além de vocês dois acompanha resultado ou recebe o DRE?'],
+ ['A6','A',0,'Imóvel próprio, alugado ou de família? Valor e prazo do contrato.'],
+ ['A7','A',0,'Existe dívida, financiamento, empréstimo ou parcelamento ativo?'],
+
+ ['B1','B',1,'Há quanto tempo o café existe e como surgiu?'],
+ ['B2','B',1,'Quando um cliente recomenda o café para um amigo, o que ele diz? (a frase real)'],
+ ['B3','B',0,'O que o café tem que ninguém na região tem?'],
+ ['B4','B',0,'Qual o produto assinatura — aquele que se sair do cardápio gera reclamação?'],
+ ['B5','B',0,'Qual o maior erro já cometido no negócio e o que ficou de aprendizado?'],
+ ['B6','B',0,'O que já foi tentado e não deu certo? (produto, horário, promoção, contratação)'],
+
+ ['C1','C',1,'Liste toda a equipe: função, dias e horários, tempo de casa, registrado ou não.'],
+ ['C2','C',1,'Quem além da sua mãe consegue abrir e fechar o café sozinho?'],
+ ['C3','C',1,'Quem é o "talvez" como possível líder? Por que essa pessoa? O que falta nela?'],
+ ['C4','C',1,'Se sua mãe faltasse duas semanas seguidas hoje, o que aconteceria? Seja concreto.'],
+ ['C5','C',0,'Qual a rotatividade? Quantas pessoas saíram no último ano e por quê?'],
+ ['C6','C',0,'Como as pessoas são pagas — fixo, diária, comissão? Alguém tem participação em resultado?'],
+ ['C7','C',0,'Existe alguém que a equipe respeita naturalmente, mesmo sem cargo?'],
+ ['C8','C',0,'Existe conflito ou atrito conhecido dentro da equipe?'],
+
+ ['D1','D',1,'Quais produtos são feitos na casa e quais são comprados prontos? (pães, bolos, tortas, doces, salgados)'],
+ ['D2','D',1,'Quem produz cada um? Sua mãe faz quais pessoalmente?'],
+ ['D3','D',1,'As receitas estão escritas em algum lugar ou só na cabeça de alguém?'],
+ ['D4','D',0,'O que é pré-preparado e quando? Existe rotina de produção por dia da semana?'],
+ ['D5','D',0,'Como se decide quanto produzir para o fim de semana — cálculo ou sensibilidade?'],
+ ['D6','D',0,'A produção acontece na mesma cozinha do atendimento ou em espaço separado?'],
+ ['D7','D',0,'Que equipamento existe? (forno, chapa, batedeira, geladeira, freezer, espresso — quantidade e estado)'],
+ ['D8','D',0,'Já faltou capacidade de equipamento em algum pico? Qual?'],
+
+ ['E1','E',1,'Quem decide e quem faz as compras?'],
+ ['E2','E',1,'Principais fornecedores: o que fornecem, frequência, forma de pagamento.'],
+ ['E3','E',1,'Fotos das notas dos últimos fornecimentos — conseguiu? De quais fornecedores? (destrava o custo real por produto)'],
+ ['E4','E',0,'Compra é feita com lista ou por observação da prateleira?'],
+ ['E5','E',0,'Já houve falta de insumo que impediu venda? Com que frequência?'],
+ ['E6','E',0,'Existe negociação de preço ou aceita-se o que vem?'],
+ ['E7','E',0,'Alguma compra é paga em dinheiro? Entra em algum registro?'],
+
+ ['F1','F',1,'Quantas mesas e quantos lugares no total?'],
+ ['F2','F',1,'Em domingo de pico o café enche? Tem gente esperando mesa? Cliente já foi embora por causa da fila?'],
+ ['F3','F',0,'Quanto tempo o cliente fica em média?'],
+ ['F4','F',0,'Tem área externa? Funciona o ano todo ou depende do tempo?'],
+ ['F5','F',0,'O cliente pede na mesa, no balcão, ou os dois?'],
+ ['F6','F',0,'Existe estacionamento? Chega excursão ou grupo grande?'],
+
+ ['G1','G',1,'Quem é o cliente: turista de passagem, hóspede da região, morador local? Proporção aproximada.'],
+ ['G2','G',1,'Quais são os meses fortes e os fracos do ano?'],
+ ['G3','G',0,'Quais os concorrentes diretos? O que eles fazem melhor?'],
+ ['G4','G',0,'Como o cliente descobre o café — Google, Instagram, pousada, indicação, placa na estrada?'],
+ ['G5','G',0,'Quem cuida do Instagram e do Google Meu Negócio? Com que frequência?'],
+ ['G6','G',0,'Quais as reclamações mais frequentes?'],
+ ['G7','G',0,'O preço foi reajustado no último ano? Houve reação?'],
+
+ ['H1','H',1,'Quem tem acesso ao GrandChef e o que cada um faz nele?'],
+ ['H2','H',1,'Quais módulos vocês realmente usam e quais nunca foram ligados?'],
+ ['H3','H',0,'Como é o fechamento do caixa hoje, passo a passo?'],
+ ['H4','H',0,'Quem monta o DRE no Fingu, com que frequência, a partir de qual fonte?'],
+ ['H5','H',0,'Existe contador? Recebe o quê e quando?'],
+ ['H6','H',0,'Meios de pagamento aceitos e taxa de cada um.'],
+ ['H7','H',0,'O que é controlado em caderno, WhatsApp ou papel?'],
+
+ ['I1','I',1,'Qual seu limite real de envolvimento semanal? Seja pessimista.'],
+ ['I2','I',1,'O que você quer do café daqui a 2 anos — para você, não para o negócio?'],
+ ['I3','I',0,'Retirada maior, patrimônio, ou tranquilidade de que funciona sem você?'],
+ ['I4','I',0,'O que você não está disposto a fazer? (viajar todo mês, brigar com equipe, colocar dinheiro)'],
+ ['I5','I',0,'Papel da Lara nisso — pontual ou contínuo?'],
+ ['I6','I',0,'Existe prazo ou pressão externa? (saúde, mudança, outra oportunidade)'],
+
+ ['K','K',1,'Quando um pedido demora, o que está esperando o quê? A cozinha parada esperando alguém lançar? A comida pronta esperando o café? O café pronto esperando a comida? Tudo pronto esperando alguém levar à mesa? A pessoa que faz X presa fazendo Y?'],
+
+ ['M1','M',0,'Onde as pessoas se esbarram fisicamente?'],
+ ['M2','M',0,'Quem atravessa o salão mais vezes e para quê?'],
+ ['M3','M',0,'Existe fila? De pedido ou de espera por mesa? Alguém desistiu e foi embora?'],
+ ['M4','M',0,'Como o pedido chega na cozinha e como a bebida é acionada?'],
+
+ ['N1','N',0,'Quem dá a ordem quando aperta?'],
+ ['N2','N',1,'Quantas vezes alguém pergunta algo para a mãe — e o que pergunta?'],
+ ['N3','N',0,'Alguém grita, procura, refaz? O quê exatamente?'],
+ ['N4','N',0,'O que acontece quando entra um grupo grande de uma vez?'],
+
+ ['O1','O',0,'Como é o antes da abertura e o depois do fechamento?'],
+ ['O2','O',0,'O que acontece entre 12h e 14h, que é o vale de movimento?'],
+ ['O3','O',0,'Quem almoça, quando, e consegue?'],
+ ['O4','O',0,'Tom entre as pessoas no pico. Quem parece sobrecarregado?'],
+ ['O5','O',1,'Quem toma iniciativa sem ser mandado? — é o candidato a líder de operação'],
+
+ ['P1','P',1,'Pessoa 1 — função e registro da conversa'],
+ ['P2','P',1,'Pessoa 2 — função e registro da conversa'],
+ ['P3','P',1,'Pessoa 3 — função e registro da conversa'],
+ ['P4','P',0,'O que se repetiu em três pessoas diferentes?'],
+
+ ['Q17','Q',1,'Ela quer continuar cozinhando? Registre a resposta como ela veio — se ficou ambígua, registre a ambiguidade em vez de resolver.'],
+ ['QA','Q',1,'Abertura e rotina (Q1 a Q7): como o café começou, o que mais gosta de fazer, um domingo dela do começo ao fim, quando só ela resolve.'],
+ ['QB','Q',1,'O que pesa (Q8 a Q11): o que gostaria de nunca mais fazer, o que faria com prazer se tivesse tempo, o que tira o sono.'],
+ ['QC','Q',1,'Equipe (Q12 a Q15): em quem confiaria para tocar um turno, o que falta nessa pessoa, como ela ensina.'],
+ ['QD','Q',0,'Futuro (Q16, Q18, Q19): como imagina o dia dela daqui a um ano, quais decisões sente que só ela pode tomar, o que acha que o Matheus não entende sobre o café.'],
+ ['QE','Q',0,'O que não aconteceu: pergunta que travou, assunto desviado, silêncio depois de uma pergunta.'],
+
+ ['R1','R',1,'Visto — o que você observou com os próprios olhos.'],
+ ['R2','R',1,'Dito — frases literais, entre aspas, identificadas por função.'],
+ ['R3','R',0,'Interpretado — sua leitura, separada do resto.']
+];
+
+const MAPROWS = ['Quanto entra em dinheiro por mês','Custo real de cada produto','Quanto se perde por dia em descarte','Quanto produzir para o fim de semana','Quanto comprar de cada insumo e quando','Quanto tempo leva um pedido no pico','Onde a fila trava','Receitas e ponto exato de cada uma','Quantas horas ela trabalha por semana','Resultado em mês fraco (ago/set)','Se o café aguenta mais movimento','Quem da equipe rende mais e em quê'];
+
+const PHOTOS = ['Salão inteiro, dois ângulos','Balcão e caixa','Cozinha: forno, chapa, espresso, geladeira, área de montagem, pia','O caminho do pedido até a mesa','Vitrine no fechamento de domingo (mostra a sobra)','Qualquer papel, quadro ou anotação colada na parede','Notas fiscais de fornecedor — queijo, café, farinha, leite, frutas, embalagem'];
+
+const DECISIVE = [
+ ['Q17','Ela quer continuar cozinhando?','define se o projeto é de 6 ou 18 meses'],
+ ['K','Onde a fila trava','decide o projeto do gargalo'],
+ ['O5','Quem toma iniciativa','é o candidato a líder'],
+ ['J','Mapa do conhecimento','a coluna C é a ordem da transição'],
+ ['E3','Notas dos fornecedores','destrava o custo real']
+];
+
+const GUIDES = {
+ frame:`<div class="guide"><h3>Antes de qualquer pergunta</h3>
+ <p><strong>Não é levantamento de dados.</strong> É o começo de uma mudança de papel de uma pessoa que construiu esse negócio e cuja identidade está grudada nele. Se a coleta for percebida como avaliação, o custo não é dado ruim — é confiança perdida.</p>
+ <p><strong>Princípio único:</strong> ninguém deve descobrir depois que estava sendo observado.</p>
+ <p>A mãe precisa saber, dito pelo Matheus: que existe um trabalho de organização em curso, que a Lara vai conversar com a equipe neste fim de semana, que o objetivo é tirar peso, e que ela vai ver tudo que sair disso.</p>
+ <div class="say">"Estou tentando entender como o café funciona de verdade para ajudar a organizar — ela vai conversar com o pessoal e anotar umas coisas, e depois te mostro tudo."</div>
+ <p><strong>Se essa conversa não acontecer, suspenda a coleta.</strong> O dado não vale o custo.</p></div>
+
+ <div class="guide"><h3>Sobre o papel de psicóloga</h3>
+ <p>A Lara atua como pessoa da família ajudando, não como profissional exercendo — atuação com familiares é vedada eticamente, e se a mãe sentir "estão me analisando", fecha na hora.</p>
+ <p>Escuta e pergunta aberta, sim. Interpretação, devolutiva psicológica ou leitura de dinâmica familiar no registro, não. Material pessoal ou sensível que apareça fica fora do relatório.</p></div>
+
+ <div class="guide"><h3>Regras de condução</h3><ul>
+ <li><strong>Pergunta aberta sempre.</strong> "Como funciona a compra?" e não "a compra é desorganizada, né?"</li>
+ <li><strong>Silêncio é ferramenta.</strong> Depois da resposta, esperar. A segunda frase tem o conteúdo</li>
+ <li><strong>Não corrigir, não sugerir, não resolver</strong> — mesmo vendo solução óbvia</li>
+ <li>Pedir exemplo concreto: "me conta a última vez que isso aconteceu"</li>
+ <li>Nunca perguntar sobre o desempenho de um colega</li>
+ <li><strong>Anotar depois, não durante.</strong> Caderno aberto muda o que a pessoa diz</li>
+ <li>Registrar a frase literal quando for marcante</li></ul></div>
+
+ <div class="rules"><div class="hd"><div>Não perguntar</div><div>Perguntar</div></div>
+ <div><div class="no">"O que está errado aqui?"</div><div class="yes">"O que mais te faz perder tempo no dia?"</div></div>
+ <div><div class="no">"Ela deveria sair da cozinha?"</div><div class="yes">"Como seria o café daqui a um ano, no melhor cenário?"</div></div>
+ <div><div class="no">"Sobra ou falta dinheiro no caixa?"</div><div class="yes">"Como é o fechamento no fim do dia?"</div></div>
+ <div><div class="no">"Quem não trabalha direito?"</div><div class="yes">"Quando aperta, quem resolve?"</div></div>
+ <div><div class="no">"Vocês não têm controle de estoque, né?"</div><div class="yes">"Como vocês sabem que está na hora de comprar?"</div></div></div>
+
+ <div class="guide"><h3>Terreno sensível</h3><ul>
+ <li><strong>Dinheiro em espécie</strong> — não perguntar quanto nem para onde vai. Só como é o fechamento do caixa</li>
+ <li><strong>Sucessão e saída da operação</strong> — não mencionar em campo. É conversa do Matheus, depois</li>
+ <li><strong>Desempenho individual</strong> — só sobre a própria rotina, nunca sobre terceiros</li></ul>
+ <p>Se alguém perguntar "isso vai dar demissão?": não, o objetivo é organizar e tirar sobrecarga.</p></div>`,
+
+ team:`<div class="guide"><h3>Como conduzir</h3>
+ <p>15 minutos por pessoa, no fluxo natural do trabalho. <strong>Não chamar para "uma conversa"</strong> — isso assusta.</p>
+ <div class="say">"O Matheus está tentando organizar umas coisas para tirar peso de vocês. Posso te fazer umas perguntas rápidas sobre como é seu dia?"</div>
+ <ol>
+ <li>Me conta como é seu dia aqui, do começo ao fim</li>
+ <li>O que mais te faz perder tempo?</li>
+ <li>O que você teve que refazer essa semana?</li>
+ <li>Quando surge dúvida no meio do movimento, você pergunta para quem?</li>
+ <li>Tem alguma coisa que você sabe resolver mas precisa pedir autorização?</li>
+ <li>O que é pior: sábado ou domingo? Por quê?</li>
+ <li>Tem alguma hora do dia que é sempre um caos?</li>
+ <li>Se pudesse mudar uma coisa aqui, qual seria?</li>
+ <li>Tem alguma coisa que você aprendeu e ninguém mais sabe fazer?</li>
+ <li>Como você aprendeu o que faz aqui?</li>
+ <li>Se aparecesse mais uma pessoa na equipe, o que ela deveria fazer?</li></ol>
+ <div class="say">Fechamento: "tem mais alguma coisa que você acha importante e eu não perguntei?" — costuma render o melhor material.</div>
+ <p><strong>O padrão que se repetir em três pessoas diferentes é o problema real.</strong> Fala isolada é ruído. Identificar por função, nunca por nome.</p></div>`,
+
+ mae:`<div class="guide"><h3>Como conduzir</h3>
+ <p><strong>Não é formulário. Não imprimir, não mostrar, não gravar.</strong> Conversa fora do café, sem pressa. Preencher aqui depois, de memória. Se render metade, já valeu.</p>
+ <p>Nunca começar por problema — começar por história.</p>
+ <ol><li>Como foi que o café começou?</li><li>O que você mais gosta de fazer aqui?</li>
+ <li>Me conta um domingo seu, de quando acorda até chegar em casa</li>
+ <li>Em que momento do dia você sente que só você resolve?</li>
+ <li>Quantas vezes te procuram num sábado? Para quê?</li>
+ <li>Quando foi a última vez que você tirou um fim de semana inteiro?</li>
+ <li>Tem alguma coisa que você faz hoje que já foi de outra pessoa?</li>
+ <li>O que você gostaria de nunca mais precisar fazer?</li>
+ <li>O que você faria com prazer se tivesse tempo, e hoje não consegue?</li>
+ <li>O que te tira o sono?</li>
+ <li>O que costuma dar errado e você já sabe que vai dar?</li>
+ <li>Tem alguém aqui que você confiaria para tocar um turno sozinha?</li>
+ <li>O que falta nessa pessoa?</li><li>Como você ensina alguém a fazer as coisas do seu jeito?</li>
+ <li>Se tivesse mais uma pessoa, o que ela faria?</li>
+ <li>Como você imagina seu dia no café daqui a um ano?</li>
+ <li><strong>Você quer continuar cozinhando?</strong></li>
+ <li>Quais decisões você sente que só você pode tomar? Por quê?</li>
+ <li>O que você acha que o Matheus não entende sobre o café?</li></ol></div>
+ <div class="guide"><h3>Sobre a pergunta 17</h3>
+ <p>É a mais importante de todo o instrumento. <strong>Sim</strong> → tirar do salão e blindar a produção, projeto de 6 meses. <strong>Não</strong> → substituir também a cozinha, projeto de 12 a 18 meses.</p>
+ <p>Não induzir. Não sugerir que ela deveria querer sair. Não mencionar plano nenhum. Se a conversa não chegar nesse ponto com naturalidade, <strong>não force</strong> — fica para outro dia, com o Matheus.</p></div>`,
+
+ devol:`<div class="guide"><h3>Como registrar</h3>
+ <p>Texto corrido. Não precisa organizar nem interpretar. <strong>Separe o que foi visto do que foi dito do que foi interpretado</strong> — os três campos abaixo.</p>
+ <ul><li>Frases literais entre aspas sempre que possível</li>
+ <li>Identificar por função, nunca por nome: "atendente 1", "cozinha"</li>
+ <li>Registrar também o que não aconteceu</li></ul></div>
+ <div class="guide"><h3>Fora do relatório</h3>
+ <p>Assunto pessoal, familiar ou de saúde. Comentário de uma pessoa sobre outra. Qualquer leitura psicológica sobre alguém.</p>
+ <p>Se algo relevante para o negócio veio embrulhado em assunto pessoal, registrar só a parte do negócio.</p>
+ <p><strong>O combinado é que a mãe vê o resultado.</strong> Cumprir isso importa mais que qualquer achado — é o que garante que exista uma segunda rodada.</p></div>`
+};
+
+/* ================= SYNC ================= */
+function setSync(s,txt){const d=document.getElementById('sdot');d.className='dot'+(s?' '+s:'');document.getElementById('stext').textContent=txt}
+
+async function pull(){
+  if(!API) return;
+  try{
+    const r = await fetch(API+'?action=all&t='+Date.now());
+    const j = await r.json();
+    const items = j.items||{};
+    let changed=false;
+    const act = document.activeElement;
+    const skip = act && act.dataset ? act.dataset.id : null;
+    /* servidor -> local: nunca sobrescreve o campo em foco */
+    for(const id in items){
+      if(id===skip) continue;
+      const rem=items[id], loc=data[id];
+      if(!loc || (rem.ts||0) > (loc.ts||0)){ data[id]=rem; changed=true; }
+    }
+    /* local -> servidor: reenvia o que foi digitado offline e ainda não subiu */
+    for(const id in data){
+      const loc=data[id], rem=items[id];
+      if(loc && (!rem || (loc.ts||0) > (rem.ts||0))) push(id);
+    }
+    if(changed){ store.set('cm.data',JSON.stringify(data)); render(); }
+    setSync('on','sincronizado');
+  }catch(e){ setSync('err','sem sinal'); }
+}
+
+async function push(id){
+  const rec = data[id]; if(!rec) return;
+  if(!API){ setSync('','só neste aparelho'); return; }
+  try{
+    await fetch(API,{method:'POST',body:JSON.stringify({action:'save',id,v:rec.v,who:rec.who,ts:rec.ts})});
+    setSync('on','salvo');
+  }catch(e){ setSync('err','guardado · envia ao voltar'); }
+}
+
+let timers={};
+function setVal(id,v){
+  data[id]={v,who,ts:Date.now()};
+  store.set('cm.data',JSON.stringify(data));
+  paintProgress();
+  clearTimeout(timers[id]);
+  timers[id]=setTimeout(()=>push(id),700);
+}
+
+/* ================= RENDER ================= */
+function setWho(w){
+  who=w; store.set('cm.who',w);
+  document.getElementById('wM').setAttribute('aria-pressed',w==='matheus');
+  document.getElementById('wL').setAttribute('aria-pressed',w==='lara');
+  const first = SOLO_LARA ? 0 : BLOCKS.findIndex(b=>b.o===w);
+  cur = first>0?first:0;
+  render();
+}
+
+function visibleBlocks(){ return SOLO_LARA ? BLOCKS : BLOCKS.filter(b=>b.o==='ambos'||b.o===who) }
+
+function blockQs(k){
+  const ess=document.getElementById('essOnly').checked;
+  return Q.filter(q=>q[1]===k && (!ess||q[2]===1));
+}
+
+function answered(id){ const d=data[id]; return d && String(d.v||'').trim().length>0 }
+
+function mapDone(){ return MAPROWS.filter((_,i)=>answered('J'+i)).length }
+
+function render(){
+  if(!who){ document.getElementById('app').classList.add('hide'); document.querySelector('.bar').classList.add('hide'); document.getElementById('setup').classList.remove('hide'); return }
+  document.getElementById('app').classList.remove('hide');
+  document.querySelector('.bar').classList.remove('hide');
+  document.getElementById('setup').classList.add('hide');
+
+  const vb=visibleBlocks();
+  if(cur>=vb.length) cur=0;
+  const b=vb[cur];
+
+  /* nav */
+  const nav=document.getElementById('nav');
+  nav.innerHTML='<div class="nav-h">Blocos</div>'+vb.map((x,i)=>{
+    let tot,don;
+    if(x.special==='map'){tot=MAPROWS.length;don=mapDone()}
+    else if(x.special==='chk'){tot=PHOTOS.length;don=PHOTOS.filter((_,j)=>answered('L'+j)).length}
+    else {const qs=Q.filter(q=>q[1]===x.k);tot=qs.length;don=qs.filter(q=>answered(q[0])).length}
+    return `<button onclick="go(${i})" aria-current="${i===cur}"><span class="k">${x.k}</span><span class="n">${x.t}</span><span class="c">${tot?don+'/'+tot:''}</span></button>`;
+  }).join('');
+
+  /* farol */
+  document.getElementById('farol').innerHTML=DECISIVE.map(([id,t,w])=>{
+    const done = id==='J' ? mapDone()>=MAPROWS.length : answered(id);
+    const bk = id==='Q17'?'Q':id==='O5'?'O':id==='E3'?'E':id;
+    const bi = vb.findIndex(x=>x.k===bk);
+    const act = bi>=0 ? `onclick="go(${bi})"` : 'disabled style="opacity:.45;cursor:default"';
+    return `<button class="fitem" ${act}><span class="fdot ${done?'done':''}"></span><span><b>${t}</b><em>${w}</em></span></button>`;
+  }).join('');
+
+  /* conteúdo */
+  let h=`<div class="bhead"><div class="eyebrow">Bloco ${b.k}${SOLO_LARA?'':' · '+(b.o==='ambos'?'os dois':b.o)}</div><h1>${b.t}</h1>`;
+  if(b.note) h+=`<div class="note">${b.note}</div>`;
+  h+='</div>';
+  if(b.guide) h+=GUIDES[b.guide];
+
+  if(b.special==='map'){
+    h+='<div class="note" style="background:#fff;border:1px solid var(--line);border-left:3px solid var(--mel);padding:11px 13px;border-radius:0 10px 10px 0;font-size:13.5px;margin-bottom:12px"><b>N</b> = ninguém sabe · <b>C</b> = ela sabe de cabeça, não está escrito · <b>E</b> = medido e escrito.<br>A coluna C é a ordem de trabalho da transição.</div><div class="map">';
+    MAPROWS.forEach((r,i)=>{
+      const v=data['J'+i]?data['J'+i].v:'';
+      h+=`<div class="map-r"><span>${r}</span><div class="seg">`+['N','C','E'].map(o=>`<button data-v="${o}" aria-pressed="${v===o}" onclick="setVal('J${i}','${o}');render()">${o}</button>`).join('')+'</div></div>';
+    });
+    h+='</div>';
+  } else if(b.special==='chk'){
+    h+='<div class="chk">';
+    PHOTOS.forEach((p,i)=>{
+      h+=`<label><input type="checkbox" ${answered('L'+i)?'checked':''} onchange="setVal('L${i}',this.checked?'ok':'');render()"><span>${p}</span></label>`;
+    });
+    h+='</div>';
+  }
+
+  const qs=blockQs(b.k);
+  h+=qs.map(([id,,ess,txt])=>{
+    const d=data[id]||{};
+    const other = d.who && d.who!==who ? `<span class="by">${d.who}</span>` : '';
+    return `<div class="q ${ess?'ess':''}" id="q-${id}">
+      <div class="qh"><span class="qid">${id}</span><span class="qt">${txt}</span>${ess?'<span class="badge">essencial</span>':''}</div>
+      <textarea data-id="${id}" oninput="setVal('${id}',this.value)" placeholder="Escreva aqui. &quot;Não sei&quot; é resposta útil.">${(d.v||'').replace(/</g,'&lt;')}</textarea>
+      <div class="qf"><span>${d.ts?'atualizado '+new Date(d.ts).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):''}</span>${other}</div>
+    </div>`;
+  }).join('');
+
+  if(!qs.length && !b.special && !b.guide) h+='<div class="q">Nada aqui com o filtro atual.</div>';
+  document.getElementById('main').innerHTML=h;
+  paintProgress();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function paintProgress(){
+  const vb=visibleBlocks();
+  const all=Q.filter(q=>vb.some(b=>b.k===q[1]));
+  const ess=all.filter(q=>q[2]===1);
+  const dAll=all.filter(q=>answered(q[0])).length;
+  const dEss=ess.filter(q=>answered(q[0])).length;
+  document.getElementById('pg').innerHTML=`<b>${dEss}/${ess.length}</b> essenciais · <b>${dAll}/${all.length}</b> no total`;
+  const t=document.getElementById('ticks');
+  t.innerHTML=all.map(q=>`<span class="tick ${answered(q[0])?(q[2]?'f':'e'):''}"></span>`).join('');
+}
+
+function go(i){cur=i;render()}
+function nextB(){const n=visibleBlocks().length;cur=(cur+1)%n;render()}
+function prevB(){const n=visibleBlocks().length;cur=(cur-1+n)%n;render()}
+
+function saveApi(){
+  const v=document.getElementById('apiIn').value.trim();
+  if(v){ API=v; store.set('cm.api',v); }
+  store.set('cm.skip','1');
+  setWho(who||'matheus');
+  if(API){ setSync('','conectando'); pull(); if(!polling) polling=setInterval(pull,8000); }
+  else setSync('','só neste aparelho');
+}
+
+function exportMd(){
+  let s=`# Diagnóstico Café Mantiqueira\n\nExportado em ${new Date().toLocaleString('pt-BR')}\n\n`;
+  BLOCKS.forEach(b=>{
+    const qs=Q.filter(q=>q[1]===b.k);
+    if(!qs.length && !b.special) return;
+    s+=`\n## Bloco ${b.k} — ${b.t} (${b.o})\n\n`;
+    if(b.special==='map') MAPROWS.forEach((r,i)=>{s+=`- ${r}: **${(data['J'+i]||{}).v||'—'}**\n`});
+    if(b.special==='chk') PHOTOS.forEach((p,i)=>{s+=`- [${answered('L'+i)?'x':' '}] ${p}\n`});
+    qs.forEach(([id,,ess,txt])=>{
+      const d=data[id]||{};
+      s+=`**${id}${ess?' ⚑':''}.** ${txt}\n\nR: ${d.v||'—'}${d.who?`  \n_(${d.who})_`:''}\n\n`;
+    });
+  });
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([s],{type:'text/markdown'}));
+  a.download='diagnostico-cafe-mantiqueira.md'; a.click();
+}
+
+/* ================= INIT ================= */
+function boot(){
+  if(SOLO_LARA){
+    document.querySelector('.who').style.display='none';   // sem alternador: só a Lara coleta
+    setWho('lara');
+  } else {
+    const skipped = store.get('cm.skip')==='1';
+    if(!API && !skipped){
+      document.getElementById('setup').classList.remove('hide');
+      document.getElementById('app').classList.add('hide');
+      document.querySelector('.bar').classList.add('hide');
+      setSync('','não conectado');
+      return;
+    }
+    setWho(who||'matheus');
+  }
+  if(API){ setSync('','conectando'); pull(); polling=setInterval(pull,8000); }
+  else setSync('','só neste aparelho');
+}
+boot();
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden && API) pull(); });
+window.addEventListener('online',()=>{ if(API) pull(); });
+</script>
+</body>
+</html>
