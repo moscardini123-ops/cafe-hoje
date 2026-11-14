@@ -1,0 +1,10 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Preços do Café</title></head><body><p style="font:16px system-ui;padding:24px;color:#555">Carregando...</p><script>
+const API_CERTA='https://script.google.com/macros/s/AKfycbyvedOSCsZC0iZWeuraiQ7Bjmez3eITHSGhJzPbsLooNh_yflsH3YfUctRojWVD208u/exec';
+fetch('/app-orig.html',{cache:'no-store'}).then(r=>r.text()).then(h=>{
+  h=h.replace('const API_FIXA = "";','const API_FIXA = "'+API_CERTA+'";');
+  h=h.replace("if(qs.get('api')){API=qs.get('api');LS.set('api',API);","if(qs.get('api')){if(!API_FIXA){API=qs.get('api');LS.set('api',API)}");
+  h=h.replace('if(loc&&confirm(','if(false&&confirm(');
+  h=h.replace('</body>','<script src="/fix.js"></scr'+'ipt></body>');
+  document.open();document.write(h);document.close();
+}).catch(()=>{document.body.innerHTML='<p style="font:16px system-ui;padding:24px">Sem internet. Tente de novo.</p>'});
+</script></body></html>

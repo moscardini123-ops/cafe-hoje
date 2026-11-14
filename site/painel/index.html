@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#4A2C17">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Café Hoje">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="/painel/manifest.json">
+<link rel="apple-touch-icon" href="/painel/apple-touch-icon.png">
+<link rel="icon" href="/painel/icon-192.png">
+<title>Café Hoje</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F6F3EC;--card:#fff;--ink:#2A1A0F;--ink2:#5E4E40;--ink3:#8A7A6B;--line:#E4DCCD;--brown:#4A2C17;--bar:#C9A27E;--soft:#EFE8DC;
+--up:#2E6B3A;--up-bg:#E2F0E4;--down:#A52A1F;--down-bg:#FBE4E1;--flat-bg:#EFEAE0;--warn-bg:#FFF3D6;--warn:#7A5600;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17120E;--card:#221B15;--ink:#F5EEE6;--ink2:#CDBFB0;--ink3:#9C8C7C;--line:#3A2F25;--brown:#E8C9A8;--bar:#9A7552;--soft:#2E251D;
+--up:#8FD19E;--up-bg:#1F3324;--down:#F2A097;--down-bg:#3A1F1C;--flat-bg:#2E261F;--warn-bg:#3A2F14;--warn:#F0CF7A;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#17120E;--card:#221B15;--ink:#F5EEE6;--ink2:#CDBFB0;--ink3:#9C8C7C;--line:#3A2F25;--brown:#E8C9A8;--bar:#9A7552;--soft:#2E251D;
+--up:#8FD19E;--up-bg:#1F3324;--down:#F2A097;--down-bg:#3A1F1C;--flat-bg:#2E261F;--warn-bg:#3A2F14;--warn:#F0CF7A;color-scheme:dark}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font:17px/1.45 Inter,system-ui,sans-serif;-webkit-text-size-adjust:100%}
+.wrap{max-width:560px;margin:0 auto;padding:12px 16px calc(40px + env(safe-area-inset-bottom))}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0 10px}
+header h1{font-size:22px;font-weight:800;color:var(--brown);letter-spacing:-.01em}
+header small{color:var(--ink3);font-size:13px;text-align:right}
+.nav{display:grid;grid-template-columns:52px 1fr 52px;gap:8px;align-items:center;position:sticky;top:0;z-index:5;background:var(--bg);padding:6px 0}
+.nav button{height:52px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:700 24px/1 Inter,sans-serif;cursor:pointer}
+.nav button:disabled{opacity:.35}
+.dia{text-align:center;line-height:1.2}.dia b{display:block;font-size:20px}.dia span{font-size:14px;color:var(--ink3)}
+.dia a{font-size:14px;color:var(--brown);font-weight:600}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0 4px}
+.seg button{font:600 15px Inter,sans-serif;padding:11px 6px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink2);cursor:pointer;min-height:46px}
+.seg button.on{background:var(--brown);border-color:var(--brown);color:var(--card)}
+.cards{display:flex;flex-direction:column;gap:12px;margin-top:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.card h2{font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);font-weight:700;margin-bottom:6px}
+.big{font-size:38px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.chip{display:inline-block;font-weight:700;font-size:15px;padding:4px 10px;border-radius:99px;margin-top:6px}
+.chip.up{background:var(--up-bg);color:var(--up)}.chip.down{background:var(--down-bg);color:var(--down)}.chip.flat{background:var(--flat-bg);color:var(--ink2)}
+.cmp{color:var(--ink3);font-size:15px;margin-top:4px}
+.row{display:flex;gap:18px;margin-top:10px;flex-wrap:wrap}.row div{font-size:15px;color:var(--ink2)}.row b{display:block;font-size:20px;color:var(--ink)}
+.feriado{background:var(--warn-bg);color:var(--warn);border-radius:12px;padding:10px 14px;font-weight:600;font-size:15px}
+.prog{height:22px;background:var(--soft);border-radius:99px;overflow:hidden;margin:10px 0 6px;position:relative}
+.prog i{display:block;height:100%;background:var(--up);border-radius:99px}
+.prog.falta i{background:var(--bar)}
+.txt{font-size:16px;color:var(--ink2)}.txt b{color:var(--ink)}
+.hrs{list-style:none;padding:0;display:flex;flex-direction:column;gap:7px;margin-top:6px}
+.hrs li{display:grid;grid-template-columns:38px 1fr 76px;gap:8px;align-items:center;font-size:15px}
+.hb{height:18px;background:var(--soft);border-radius:5px;position:relative}
+.hb i{display:block;height:100%;background:var(--bar);border-radius:5px}
+.hb.pk i{background:var(--brown)}
+.hb em{position:absolute;top:-3px;bottom:-3px;width:3px;margin-left:-1.5px;background:var(--ink);border-radius:2px}
+.hrs b{text-align:right;font-weight:600;white-space:nowrap}
+.leg{display:flex;gap:14px;font-size:13px;color:var(--ink3);margin-top:8px;flex-wrap:wrap}
+.leg i{display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--bar);vertical-align:-1px;margin-right:5px}.leg i.t{width:3px;background:var(--ink)}
+ol.top{padding-left:24px;display:flex;flex-direction:column;gap:6px;font-size:16px}
+ol.top li span{color:var(--ink3);font-weight:600;white-space:nowrap}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.duo .big{font-size:26px}
+.formas{font-size:15px;color:var(--ink2);line-height:1.7}
+details.inst summary{cursor:pointer;font-weight:600;color:var(--brown)}
+details.inst p{margin-top:8px;font-size:15px;color:var(--ink2)}
+.msg{text-align:center;padding:40px 8px;color:var(--ink2)}
+.pin{display:flex;flex-direction:column;gap:12px;align-items:center;padding:30px 8px}
+.pin input{font:700 30px Inter,sans-serif;letter-spacing:.3em;text-align:center;width:220px;padding:10px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.pin button{font:700 18px Inter,sans-serif;padding:14px 30px;border-radius:12px;border:0;background:var(--brown);color:var(--card);cursor:pointer}
+.err{color:var(--down);font-weight:600}
+.atual{font-size:13px;color:var(--ink3);text-align:center;margin-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>☕ Café Hoje</h1><small id="upd"></small></header>
+<div id="app"><p class="msg">Carregando…</p></div>
+</div>
+<script src="/painel/app.js"></script>
+<script src="/painel/meses.js"></script>
+</body>
+</html>
