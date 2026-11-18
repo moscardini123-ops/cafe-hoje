@@ -24,6 +24,12 @@ trap limpa EXIT
 
 psql_() { "${COMO[@]}" "$BIN/psql" -h "$TMP" -U postgres -d postgres -v ON_ERROR_STOP=1 -q "$@"; }
 
+# Só local: papéis e auth.uid() que o Supabase já traz.
+for f in "$TMP"/db/local/*.sql; do
+  echo "local $(basename "$f")"
+  psql_ -f "$f"
+done
+
 for f in "$TMP"/db/migrations/*.sql; do
   echo "migração $(basename "$f")"
   psql_ -f "$f"

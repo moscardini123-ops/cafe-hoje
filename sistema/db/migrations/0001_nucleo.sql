@@ -41,7 +41,7 @@ create table core.pessoa_loja (
 
 -- Define o PIN (4 a 6 dígitos). Recusa PIN repetido entre pessoas que dividem uma loja.
 create function core.definir_pin(p_pessoa int, p_pin text) returns void
-language plpgsql as $$
+language plpgsql set search_path = extensions, public as $$
 begin
   if p_pin !~ '^[0-9]{4,6}$' then
     raise exception 'PIN precisa ter de 4 a 6 números';
@@ -61,7 +61,7 @@ end $$;
 -- Quem é a pessoa deste PIN nesta loja. Vazio se não existir.
 create function core.pessoa_por_pin(p_loja smallint, p_pin text)
 returns table (pessoa_id int, nome text, papel text)
-language sql stable as $$
+language sql stable set search_path = extensions, public as $$
   select p.id, p.nome, pl.papel
   from core.pessoa p
   join core.pessoa_loja pl on pl.pessoa_id = p.id and pl.loja_id = p_loja

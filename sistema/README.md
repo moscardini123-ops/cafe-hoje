@@ -15,6 +15,7 @@ Esta pasta vai para um repositório privado quando ele for criado. Aqui só entr
 | Caixa conferido | Contagem no fechamento × venda registrada | `0005_caixa.sql` |
 | Compras | Lista de mercado a partir da produção | `0006_compras.sql` |
 | Fiscal | NFC-e pela Focus NFe. Desligado até existir venda própria | `0007_fiscal.sql` |
+| Acesso | Logins, quem vê cada loja e as ações com PIN | `0090_acesso.sql` |
 | Módulos e lojas | Catálogo de módulos, dependências e o que fica ligado em cada loja | `0100_modulos_e_lojas.sql` |
 
 **Regras dos módulos**, garantidas pelo banco:
@@ -22,6 +23,25 @@ Esta pasta vai para um repositório privado quando ele for criado. Aqui só entr
 - Não dá para desligar um módulo do qual outro ligado depende.
 - Venda pelo GrandChef e venda própria não ficam ligadas juntas. Trocar uma pela outra é desligar uma e ligar a outra.
 - Fiscal só liga com venda própria.
+
+## Quem vê e quem faz o quê
+
+- **Login de aparelho:** um por tablet ou celular da loja. Vê só a própria loja.
+- **Login de pessoa:** para a gestão. Dona e gestão veem as duas lojas.
+- **Ninguém grava direto nas tabelas.** Toda ação passa por uma função que pede o PIN de quem está fazendo, confere o papel e registra o evento:
+
+| Ação | Função | Quem pode |
+|---|---|---|
+| Entrar | `core.entrar` | Qualquer PIN da loja |
+| Registrar sobra do dia | `sobra.registrar` | Qualquer PIN da loja, até 7 dias atrás |
+| Fechar e justificar o caixa | `caixa.fechar`, `caixa.justificar` | Caixa, até 3 dias atrás |
+| Aprovar a lista de produção | `producao.aprovar` | Cozinha |
+| Gerar a lista de novo | `producao.gerar` | Gestão |
+| Ligar e desligar módulos | `core.ligar_modulo` | Gestão |
+
+- Dona e gestão passam em qualquer papel.
+- O PIN guardado (`pin_hash`) não é legível por nenhum login.
+- O robô usa a chave de serviço e grava direto.
 
 ## Como a lista de produção é calculada
 
@@ -40,6 +60,8 @@ sistema/scripts/testar-banco.sh
 ```
 
 Sobe um Postgres temporário, aplica as migrações e roda os testes de `db/testes/`. Não precisa de Supabase.
+
+`db/local/` imita o que o Supabase já traz (papéis e `auth.uid()`). Só é usado no teste; no Supabase, aplicar apenas `db/migrations/`.
 
 ## Importar dados
 
@@ -63,7 +85,8 @@ node sistema/scripts/sugerir-vinculos.mjs receitas.json vendas.json > sistema/da
 
 ## O que falta
 
-- [ ] Projeto no Supabase e permissões por loja (RLS).
+- [x] Permissões por loja (RLS) e ações com PIN.
+- [ ] Projeto no Supabase: aplicar as migrações e expor os schemas na API.
 - [ ] Robô gravando também no banco, além da planilha.
 - [ ] Telas: lista de produção, sobra, fechamento de caixa, login por PIN.
 - [ ] Mensagem da lista de produção para a Eliana no WhatsApp, toda segunda.
