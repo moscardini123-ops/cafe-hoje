@@ -8,6 +8,8 @@ Este repositório é público. Nenhum número de faturamento, dado de cliente, c
 
 ## 1. Decisão de arquitetura
 
+> **Atualização de 18/11/2026:** a família decidiu ter um sistema próprio completo e modular, rodando nas duas lojas em menos de um mês. A venda própria com NFC-e (Focus NFe) é o último módulo. Até ele ficar pronto, a venda continua no GrandChef, ligada ao sistema como um módulo de leitura. Código e estrutura em `sistema/`.
+
 **O GrandChef continua fazendo a venda. O sistema próprio faz o resto, por cima dele.**
 
 | Fica no GrandChef | Vai para o sistema próprio |
