@@ -16,6 +16,7 @@ Esta pasta vai para um repositório privado quando ele for criado. Aqui só entr
 | Compras | Lista de mercado a partir da produção | `0006_compras.sql` |
 | Fiscal | NFC-e pela Focus NFe. Desligado até existir venda própria | `0007_fiscal.sql` |
 | Acesso | Logins, quem vê cada loja e as ações com PIN | `0090_acesso.sql` |
+| Telas | Quem está logado, criar PIN, lista de produção | `0091_telas.sql` |
 | Módulos e lojas | Catálogo de módulos, dependências e o que fica ligado em cada loja | `0100_modulos_e_lojas.sql` |
 
 **Regras dos módulos**, garantidas pelo banco:
@@ -86,9 +87,11 @@ node sistema/scripts/sugerir-vinculos.mjs receitas.json vendas.json > sistema/da
 ## O que falta
 
 - [x] Permissões por loja (RLS) e ações com PIN.
-- [ ] Projeto no Supabase: aplicar as migrações e expor os schemas na API.
+- [x] Projeto no Supabase com as migrações aplicadas e os schemas expostos na API.
+- [x] Tela da lista de produção (`site/producao/`).
 - [ ] Robô gravando também no banco, além da planilha.
-- [ ] Telas: lista de produção, sobra, fechamento de caixa, login por PIN.
+- [ ] Telas: sobra, fechamento de caixa, cadastro da equipe.
+- [ ] Robô gerando a lista toda segunda.
 - [ ] Mensagem da lista de produção para a Eliana no WhatsApp, toda segunda.
 - [ ] Revisar com a Eliana: vínculos produto → receita, receitas feitas na loja ou em casa, rendimentos.
 - [ ] Venda própria (PDV) e nota fiscal pela Focus NFe, por último.

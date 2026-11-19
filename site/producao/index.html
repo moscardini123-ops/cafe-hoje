@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#4A2C17">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Produção">
+<link rel="apple-touch-icon" href="/painel/apple-touch-icon.png">
+<link rel="icon" href="/painel/icon-192.png">
+<title>Lista de produção</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F6F3EC;--card:#fff;--ink:#2A1A0F;--ink2:#5E4E40;--ink3:#8A7A6B;--line:#E4DCCD;--brown:#4A2C17;--soft:#EFE8DC;
+--ok:#2E6B3A;--ok-bg:#E2F0E4;--err:#A52A1F;--err-bg:#FBE4E1;--warn:#7A5600;--warn-bg:#FFF3D6;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17120E;--card:#221B15;--ink:#F5EEE6;--ink2:#CDBFB0;--ink3:#9C8C7C;--line:#3A2F25;--brown:#E8C9A8;--soft:#2E251D;
+--ok:#8FD19E;--ok-bg:#1F3324;--err:#F2A097;--err-bg:#3A1F1C;--warn:#F0CF7A;--warn-bg:#3A2F14;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#17120E;--card:#221B15;--ink:#F5EEE6;--ink2:#CDBFB0;--ink3:#9C8C7C;--line:#3A2F25;--brown:#E8C9A8;--soft:#2E251D;
+--ok:#8FD19E;--ok-bg:#1F3324;--err:#F2A097;--err-bg:#3A1F1C;--warn:#F0CF7A;--warn-bg:#3A2F14;color-scheme:dark}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font:17px/1.45 Inter,system-ui,sans-serif;-webkit-text-size-adjust:100%}
+.wrap{max-width:560px;margin:0 auto;padding:12px 16px calc(110px + env(safe-area-inset-bottom))}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0 10px}
+header h1{font-size:22px;font-weight:800;color:var(--brown)}
+.link{background:none;border:0;color:var(--ink3);font:600 14px Inter,sans-serif;cursor:pointer;padding:8px 0}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;margin:4px 0 10px}
+.seg button{font:600 16px Inter,sans-serif;padding:12px 6px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink2);cursor:pointer;min-height:48px}
+.seg button.on{background:var(--brown);border-color:var(--brown);color:var(--card)}
+.semana{font-size:20px;font-weight:800}
+.status{display:inline-block;margin-top:6px;padding:6px 10px;border-radius:999px;font-size:14px;font-weight:600}
+.status.rascunho{background:var(--warn-bg);color:var(--warn)}
+.status.aprovado{background:var(--ok-bg);color:var(--ok)}
+.dica{color:var(--ink2);font-size:15px;margin-top:10px}
+.itens{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.item.mudou{border-color:var(--brown);box-shadow:0 0 0 1px var(--brown)}
+.linha{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.nome{font-size:18px;font-weight:700}
+.sub{color:var(--ink3);font-size:14px;margin-top:2px}
+.qtd{display:flex;align-items:center;gap:8px}
+.qtd button{width:48px;height:48px;border-radius:12px;border:1px solid var(--line);background:var(--soft);color:var(--ink);font:700 24px/1 Inter,sans-serif;cursor:pointer}
+.qtd b{min-width:40px;text-align:center;font-size:28px;font-weight:800}
+.fixo{text-align:right}.fixo b{font-size:28px;font-weight:800;display:block;line-height:1}.fixo span{font-size:13px;color:var(--ink3)}
+.era{font-size:13px;color:var(--brown);font-weight:600;margin-top:6px}
+details{margin-top:8px}summary{color:var(--ink3);font-size:14px;cursor:pointer;padding:4px 0}
+details ul{padding-left:18px;color:var(--ink2);font-size:14px;margin-top:4px}
+.barra{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom))}
+.barra div{max-width:560px;margin:0 auto;display:flex;gap:8px}
+.btn{flex:1;min-height:54px;border-radius:12px;border:0;background:var(--brown);color:var(--card);font:700 18px Inter,sans-serif;cursor:pointer}
+.btn.sec{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.btn:disabled{opacity:.5}
+.form{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 16px;margin-top:20px;display:flex;flex-direction:column;gap:12px}
+.form h2{font-size:20px}
+label{font-size:15px;font-weight:600;color:var(--ink2);display:flex;flex-direction:column;gap:6px}
+input{font:600 20px Inter,sans-serif;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:100%}
+.erro{background:var(--err-bg);color:var(--err);padding:10px 12px;border-radius:10px;font-size:15px}
+.ok{background:var(--ok-bg);color:var(--ok);padding:10px 12px;border-radius:10px;font-size:15px}
+.vazio{color:var(--ink2);text-align:center;padding:40px 0}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.modal .form{width:100%;max-width:560px;margin:0;border-radius:18px 18px 0 0;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+[hidden]{display:none!important}
+@media print{.barra,.seg,.link,.qtd button,details,.dica{display:none!important}.wrap{padding:0}.item{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><h1>Produção</h1><button class="link" id="sair" hidden>Sair</button></header>
+  <main id="app"><p class="vazio">Carregando…</p></main>
+</div>
+<div class="barra" id="barra" hidden><div id="barraConteudo"></div></div>
+<div class="modal" id="modal" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+// Endereço do banco e chave pública ("publishable"): feita para ficar no navegador.
+// Sozinha não lê nada: sem login, o banco recusa tudo.
+const SUPABASE_URL = 'https://moqxgwzrovqlnzsofwei.supabase.co';
+const SUPABASE_CHAVE_PUBLICA = 'sb_publishable_FDHUB0uTRDlUimLMz5Es0Q_fZujEsUa';
+const DOMINIO_LOGIN = '@cafemantiqueira.com';
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_CHAVE_PUBLICA);
+const app = document.getElementById('app');
+const barra = document.getElementById('barra'), barraConteudo = document.getElementById('barraConteudo');
+const modal = document.getElementById('modal');
+const estado = { eu: null, loja: null, lista: null, ajustes: {} };
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const dataBR = iso => { const [a, m, d] = iso.split('-'); return `${d}/${m}`; };
+const maisDias = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
+const bonito = s => String(s).toLowerCase().replace(/\s+/g, ' ').trim().replace(/^./, c => c.toUpperCase());
+const num = n => Number(n).toLocaleString('pt-BR', { maximumFractionDigits: 1 });
+const msgErro = e => (e && e.message ? e.message : String(e)).replace(/^.*?:\s*(?=[A-ZÁÉÍÓÚ])/, '');
+const guarda = { ler(k) { try { return localStorage.getItem(k); } catch { return null; } }, por(k, v) { try { localStorage.setItem(k, v); } catch {} } };
+
+function semBarra() { barra.hidden = true; barraConteudo.innerHTML = ''; }
+
+// ---------- Entrar ----------
+function telaLogin(erro) {
+  semBarra(); document.getElementById('sair').hidden = true;
+  app.innerHTML = `
+    <form class="form" id="f">
+      <h2>Entrar</h2>
+      ${erro ? `<div class="erro">${esc(erro)}</div>` : ''}
+      <label>Login <input id="login" autocomplete="username" autocapitalize="none" required></label>
+      <label>Senha <input id="senha" type="password" autocomplete="current-password" required></label>
+      <button class="btn">Entrar</button>
+    </form>`;
+  document.getElementById('f').onsubmit = async ev => {
+    ev.preventDefault();
+    let login = document.getElementById('login').value.trim().toLowerCase();
+    if (!login.includes('@')) login += DOMINIO_LOGIN;
+    ev.submitter && (ev.submitter.disabled = true);
+    const { error } = await sb.auth.signInWithPassword({ email: login, password: document.getElementById('senha').value });
+    if (error) return telaLogin('Login ou senha não conferem.');
+    iniciar();
+  };
+}
+
+// ---------- Criar PIN no primeiro acesso ----------
+function telaCriarPin(erro) {
+  semBarra();
+  app.innerHTML = `
+    <form class="form" id="f">
+      <h2>Crie seu PIN</h2>
+      <p class="dica">O PIN confirma que foi você quem aprovou a lista. Use de 4 a 6 números e não conte para ninguém.</p>
+      ${erro ? `<div class="erro">${esc(erro)}</div>` : ''}
+      <label>PIN <input id="p1" type="password" inputmode="numeric" pattern="[0-9]{4,6}" maxlength="6" required></label>
+      <label>Repita o PIN <input id="p2" type="password" inputmode="numeric" pattern="[0-9]{4,6}" maxlength="6" required></label>
+      <button class="btn">Salvar PIN</button>
+    </form>`;
+  document.getElementById('f').onsubmit = async ev => {
+    ev.preventDefault();
+    const p1 = document.getElementById('p1').value, p2 = document.getElementById('p2').value;
+    if (p1 !== p2) return telaCriarPin('Os dois PINs não são iguais.');
+    const { error } = await sb.schema('core').rpc('meu_pin', { p_novo: p1 });
+    if (error) return telaCriarPin(msgErro(error));
+    iniciar();
+  };
+}
+
+// ---------- Lista ----------
+async function carregarLista() {
+  app.innerHTML = '<p class="vazio">Carregando…</p>';
+  const { data, error } = await sb.schema('producao').rpc('lista', { p_loja: estado.loja });
+  if (error) { app.innerHTML = `<div class="erro">${esc(msgErro(error))}</div>`; return; }
+  estado.lista = data; estado.ajustes = {};
+  desenhar();
+}
+
+function desenhar() {
+  const lojas = estado.eu.lojas;
+  const abas = lojas.length > 1
+    ? `<div class="seg">${lojas.map(l => `<button data-loja="${l.id}" class="${l.id === estado.loja ? 'on' : ''}">${esc(l.slug === 'praca' ? 'Praça' : 'Estrada')}</button>`).join('')}</div>` : '';
+  const L = estado.lista;
+  if (!L) { app.innerHTML = abas + '<p class="vazio">Ainda não há lista de produção para esta loja.</p>'; semBarra(); ligarAbas(); return; }
+
+  const aberta = L.plano.status === 'rascunho';
+  const ini = L.plano.semana_inicio, fim = maisDias(ini, 6);
+  const itens = L.itens.map(it => {
+    const atual = estado.ajustes[it.receita_id] ?? it.final ?? it.sugerido;
+    const mudou = aberta && estado.ajustes[it.receita_id] !== undefined && estado.ajustes[it.receita_id] !== it.sugerido;
+    const ajustadoAntes = !aberta && it.final != null && it.final !== it.sugerido;
+    const produtos = (it.produtos || []).filter(p => Number(p.unidades) > 0);
+    return `
+      <div class="item ${mudou ? 'mudou' : ''}">
+        <div class="linha">
+          <div>
+            <div class="nome">${esc(it.nome)}</div>
+            <div class="sub">Rende ${num(it.rende)} ${esc(it.rende_unidade)} · semana: ${num(it.previsto)} ${esc(it.rende_unidade)}</div>
+          </div>
+          ${aberta
+            ? `<div class="qtd"><button data-menos="${it.receita_id}" aria-label="Menos">−</button><b>${atual}</b><button data-mais="${it.receita_id}" aria-label="Mais">+</button></div>`
+            : `<div class="fixo"><b>${atual}</b><span>receita${atual === 1 ? '' : 's'}</span></div>`}
+        </div>
+        ${mudou ? `<div class="era">Sugestão era ${it.sugerido}</div>` : ''}
+        ${ajustadoAntes ? `<div class="era">Sugestão era ${it.sugerido}, ajustado na aprovação</div>` : ''}
+        ${produtos.length ? `<details><summary>De onde vem esse número</summary><ul>${produtos.map(p =>
+          `<li>${esc(bonito(p.produto))}: ${num(p.unidades)} ${esc(it.rende_unidade)}</li>`).join('')}</ul></details>` : ''}
+      </div>`;
+  }).join('');
+
+  app.innerHTML = `${abas}
+    <div class="semana">Semana de ${dataBR(ini)} a ${dataBR(fim)}</div>
+    <span class="status ${aberta ? 'rascunho' : 'aprovado'}">${aberta ? 'Aguardando aprovação' : `Aprovada${L.plano.aprovado_por ? ' por ' + esc(L.plano.aprovado_por) : ''}`}</span>
+    ${aberta ? '<p class="dica">O número de cada item é quantas vezes fazer a receita. Use − e + para ajustar e depois aprove.</p>' : ''}
+    <div class="itens">${itens || '<p class="vazio">Nada para produzir nesta semana.</p>'}</div>`;
+  ligarAbas();
+
+  app.querySelectorAll('[data-mais],[data-menos]').forEach(b => b.onclick = () => {
+    const id = Number(b.dataset.mais || b.dataset.menos);
+    const it = L.itens.find(x => x.receita_id === id);
+    const atual = estado.ajustes[id] ?? it.final ?? it.sugerido;
+    const novo = Math.max(0, atual + (b.dataset.mais ? 1 : -1));
+    if (novo === it.sugerido) delete estado.ajustes[id]; else estado.ajustes[id] = novo;
+    desenhar();
+  });
+
+  barra.hidden = false;
+  barraConteudo.innerHTML = aberta
+    ? `<button class="btn" id="aprovar">Aprovar lista</button>`
+    : `<button class="btn sec" id="imprimir">Imprimir</button>`;
+  if (aberta) document.getElementById('aprovar').onclick = pedirPin;
+  else document.getElementById('imprimir').onclick = () => window.print();
+}
+
+function ligarAbas() {
+  app.querySelectorAll('[data-loja]').forEach(b => b.onclick = () => {
+    estado.loja = Number(b.dataset.loja); guarda.por('loja', estado.loja); carregarLista();
+  });
+}
+
+function pedirPin(erro) {
+  const n = Object.keys(estado.ajustes).length;
+  modal.hidden = false;
+  modal.innerHTML = `
+    <form class="form" id="fp">
+      <h2>Aprovar a lista</h2>
+      <p class="dica">${n ? `Você ajustou ${n} ite${n === 1 ? 'm' : 'ns'}.` : 'Sem ajustes: vale a sugestão.'} Depois de aprovada, a lista não muda mais.</p>
+      ${typeof erro === 'string' ? `<div class="erro">${esc(erro)}</div>` : ''}
+      <label>Seu PIN <input id="pin" type="password" inputmode="numeric" maxlength="6" autocomplete="off" required></label>
+      <div style="display:flex;gap:8px"><button type="button" class="btn sec" id="cancelar">Voltar</button><button class="btn" id="confirmar">Aprovar</button></div>
+    </form>`;
+  document.getElementById('pin').focus();
+  document.getElementById('cancelar').onclick = () => { modal.hidden = true; };
+  document.getElementById('fp').onsubmit = async ev => {
+    ev.preventDefault();
+    document.getElementById('confirmar').disabled = true;
+    const { error } = await sb.schema('producao').rpc('aprovar', {
+      p_plano: estado.lista.plano.id, p_pin: document.getElementById('pin').value, p_ajustes: estado.ajustes });
+    if (error) return pedirPin(msgErro(error));
+    modal.hidden = true;
+    carregarLista();
+  };
+}
+
+// ---------- Início ----------
+async function iniciar() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return telaLogin();
+  document.getElementById('sair').hidden = false;
+  const { data: eu, error } = await sb.schema('core').rpc('eu');
+  if (error || !eu) {
+    semBarra();
+    app.innerHTML = `<div class="erro">Este login ainda não foi liberado no sistema. Fale com a gestão.</div>`;
+    return;
+  }
+  estado.eu = eu;
+  if (eu.tipo === 'pessoa' && !eu.tem_pin) return telaCriarPin();
+  const salva = Number(guarda.ler('loja'));
+  estado.loja = eu.lojas.some(l => l.id === salva) ? salva : eu.lojas[0]?.id;
+  carregarLista();
+}
+
+document.getElementById('sair').onclick = async () => { await sb.auth.signOut(); telaLogin(); };
+iniciar();
+</script>
+</body>
+</html>
