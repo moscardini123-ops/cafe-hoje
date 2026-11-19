@@ -28,7 +28,29 @@ if (pin) ls.set('painel_pin', pin);
 if (api || k || pin) history.replaceState(null, '', location.pathname);   // tira a chave do endereço
 api = ls.get('painel_api'); k = ls.get('painel_k'); pin = ls.get('painel_pin');
 let D = [], IDX = {}, sel = hojeSP(), modo = ls.get('painel_modo') || 'semana';
+// Dentro do sistema (/sistema): lê do banco novo, com o login do sistema. Fora dele, segue pela planilha.
+const SIS = P.get('sistema') === '1', LOJA = +(P.get('loja') || 1);
+const SUPA = { url: 'https://moqxgwzrovqlnzsofwei.supabase.co', chave: 'sb_publishable_FDHUB0uTRDlUimLMz5Es0Q_fZujEsUa' };
+function carregaScript(src) { return new Promise((ok, erro) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = erro; document.head.appendChild(s); }); }
+async function carregarSistema() {
+const ck = 'painel_cache_sis_' + LOJA, cache = ls.get(ck);
+if (cache) { try { usar(JSON.parse(cache)); } catch(e) {} }
+try {
+if (!window.supabase) await carregaScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js');
+const sb = window.supabase.createClient(SUPA.url, SUPA.chave);
+const { data: { session } } = await sb.auth.getSession();
+if (!session) { $('app').innerHTML = '<p class="msg">Entre pelo sistema para ver o painel.</p>'; return; }
+const { data, error } = await sb.schema('venda').rpc('painel', { p_loja: LOJA });
+if (error) throw error;
+usar(data); ls.set(ck, JSON.stringify(data));
+} catch (e) {
+if (!D.length) $('app').innerHTML = `<p class="msg">Não consegui carregar agora.<br>Confira a internet e abra de novo.</p>`;
+else $('upd').textContent = 'sem internet · dados salvos';
+}
+}
+if (SIS) document.documentElement.classList.add('sis');
 async function carregar() {
+if (SIS) return carregarSistema();
 const cache = ls.get('painel_cache');
 if (cache) { try { usar(JSON.parse(cache)); } catch(e) {} }
 let url;
@@ -95,7 +117,7 @@ L.push(`<div class="card"><h2>Vendas ${sel===hoje?'de hoje':'do dia'}</h2><div c
 L.push(`<div class="card"><h2>Vendas ${sel===hoje?'de hoje':'do dia'}</h2><div class="big">R$ 0</div><p class="cmp">${sel===hoje?'Nenhuma venda registrada ainda hoje.':'Café fechado ou sem vendas neste dia.'}</p>
 ${cx && cx.fat ? `<p class="cmp">${DS[wd(cd)]} ${ddmmyy(cd)}: ${brl(cx.fat)}</p>` : ''}</div>`);
 }
-L.push(contas());
+if (!SIS || LOJA === 1) L.push(contas());   // as contas do mês são as da estrada
 if (x && x.ped) {
 const h = x.hora || {}, hc = (cx && cx.hora) || {};
 const hs = [...new Set([...Object.keys(h), ...Object.keys(hc)].map(Number))].filter(n => n >= 6 && n <= 22).sort((a,b) => a-b);

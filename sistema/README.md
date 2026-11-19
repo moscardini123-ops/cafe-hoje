@@ -17,6 +17,7 @@ Esta pasta vai para um repositório privado quando ele for criado. Aqui só entr
 | Fiscal | NFC-e pela Focus NFe. Desligado até existir venda própria | `0007_fiscal.sql` |
 | Acesso | Logins, quem vê cada loja e as ações com PIN | `0090_acesso.sql` |
 | Telas | Quem está logado, criar PIN, lista de produção | `0091_telas.sql` |
+| Painel e robô | Robô grava a venda do dia; Painel lê daqui | `0092_painel_e_robo.sql` |
 | Módulos e lojas | Catálogo de módulos, dependências e o que fica ligado em cada loja | `0100_modulos_e_lojas.sql` |
 
 **Regras dos módulos**, garantidas pelo banco:
@@ -89,7 +90,8 @@ node sistema/scripts/sugerir-vinculos.mjs receitas.json vendas.json > sistema/da
 - [x] Permissões por loja (RLS) e ações com PIN.
 - [x] Projeto no Supabase com as migrações aplicadas e os schemas expostos na API.
 - [x] Tela da lista de produção (`site/producao/`).
-- [ ] Robô gravando também no banco, além da planilha.
+- [x] Robô gravando também no banco, além da planilha (precisa do secret `SUPABASE_SERVICE_KEY` no GitHub).
+- [x] Aplicativo único em `site/sistema/`: Painel e Produção dentro, os outros módulos como "em breve".
 - [ ] Telas: sobra, fechamento de caixa, cadastro da equipe.
 - [ ] Robô gerando a lista toda segunda.
 - [ ] Mensagem da lista de produção para a Eliana no WhatsApp, toda segunda.

@@ -44,6 +44,7 @@ jobs:
           GC_REFRESH: ${{ secrets.GC_REFRESH }}
           APPS_SCRIPT_URL: ${{ secrets.APPS_SCRIPT_URL }}
           CAFE_KEY: ${{ secrets.CAFE_KEY }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           WPP_DESTINOS: ${{ secrets.WPP_DESTINOS }}
           LEVE: ${{ github.event.inputs.leve == 'true' && '1' || '0' }}
           ENVIAR_WPP: ${{ (github.event.schedule == '15 21 * * *' || github.event.inputs.whatsapp == 'true') && '1' || '0' }}

@@ -55,6 +55,23 @@ async function gql(operationName, query, variables) {
   }
 }
 
+// Banco do sistema próprio (Supabase). A chave de serviço fica só no GitHub Secrets.
+const SUPA_URL = process.env.SUPABASE_URL || 'https://moqxgwzrovqlnzsofwei.supabase.co';
+const SUPA_KEY = process.env.SUPABASE_SERVICE_KEY || '';
+const LOJA = process.env.LOJA || 'estrada';
+async function gravaBanco(out) {
+  const h = { 'Content-Type': 'application/json', 'Content-Profile': 'venda', apikey: SUPA_KEY };
+  if (!SUPA_KEY.startsWith('sb_')) h.Authorization = `Bearer ${SUPA_KEY}`;
+  const corpo = { p_loja: LOJA, p_dia: { dia: out.dia, resumo: out.resumo, top: out.top, formas: out.formas, porHora: out.porHora } };
+  for (let t = 1; t <= 3; t++) {
+    const r = await fetch(`${SUPA_URL}/rest/v1/rpc/gravar_dia`, { method: 'POST', headers: h, body: JSON.stringify(corpo) });
+    if (r.ok) return console.log(`${out.dia}  gravado no banco`);
+    const erro = (await r.text()).slice(0, 200);
+    if (t === 3 || r.status < 500) throw new Error(`banco recusou (${r.status}): ${erro}`);
+    await new Promise(ok => setTimeout(ok, 3000 * t));
+  }
+}
+
 async function gravaPlanilha(payload) {
   for (let tent = 1; tent <= 4; tent++) {
     try {
@@ -211,6 +228,7 @@ for (let dia = ini; dia <= fimR; dia = soma(dia, 1)) {
   if (APPS && r.pedidos) {
     await gravaPlanilha({ action: 'cafeHoje', key: KEY, ...out });
   }
+  if (SUPA_KEY && r.pedidos) await gravaBanco(out);
   if (process.env.ENVIAR_WPP === '1') {
     const ant = await totalDia(soma(dia, -7)).catch(() => null);
     const msg = mensagem(out, ant);
@@ -218,4 +236,5 @@ for (let dia = ini; dia <= fimR; dia = soma(dia, 1)) {
   }
 }
 if (!APPS) console.log('(sem APPS_SCRIPT_URL: nada foi gravado na planilha)');
+if (!SUPA_KEY) console.log('(sem SUPABASE_SERVICE_KEY: nada foi gravado no banco)');
 if (diasRefresh <= 5) console.log(`ATENÇÃO: renovar acesso (vence em ${diasRefresh} dias)`);
