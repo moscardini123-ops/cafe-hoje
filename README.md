@@ -11,6 +11,7 @@ Robô de dados e site do Café da Mantiqueira. Repositório público: só códig
 | `recados.mjs` | Recados motivadores no fim das mensagens |
 | `.github/workflows/diario.yml` | Workflow do GitHub Actions, disparado pelo Apps Script |
 | `site/` | Fontes de cafe-da-mantiqueira.vercel.app (app de preços, ficha de campo, painel e API). Deploy automático pela Vercel, com Root Directory `site` |
+| `sistema/` | Sistema da cafeteria (comandas, cardápio, cozinha, caixa). Next.js + Supabase, projeto Vercel próprio com Root Directory `sistema`. Veja `sistema/README.md` |
 
 ## Regras
 

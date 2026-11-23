@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f7f3ee;
+  --foreground: #2b211b;
+  --card: #ffffff;
+  --muted: #8a7a6f;
+  --border: #e6ddd4;
+  --primary: #6f4e37;
+  --primary-foreground: #ffffff;
+  --accent: #c8a27a;
+  --danger: #b4452f;
+  --success: #3f7d4e;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #1b1512;
+    --foreground: #f1e9e2;
+    --card: #26201c;
+    --muted: #a8988c;
+    --border: #3a302a;
+    --primary: #c8a27a;
+    --primary-foreground: #1b1512;
+    --accent: #6f4e37;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* Campos de formulário e botões padrão (Tailwind 4: sem @apply de classes próprias) */
+@utility campo {
+  @apply w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/40;
+}
+@utility botao-primario {
+  @apply inline-flex items-center justify-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed bg-primary text-primary-foreground hover:opacity-90;
+}
+@utility botao-secundario {
+  @apply inline-flex items-center justify-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed border border-border bg-card hover:bg-background;
+}
+@utility botao-perigo {
+  @apply inline-flex items-center justify-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed text-danger hover:bg-danger/10;
+}
+@utility etiqueta {
+  @apply inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium;
+}
